@@ -1,0 +1,21 @@
+[report_center] 2014-11-27 10:49:04 051 5857945@qtp-32997440-4 com.jshuabo.frame.server.aop.service.locale.ExceptionLocaler.localeException(ExceptionLocaler.java:89)
+[ERROR] catching MyBatisSystemException [系统错误！请联系管理员。] : nested exception is org.apache.ibatis.binding.BindingException: Parameter '__frch_item_1' not found. Available parameters are [id, param1, listMap]
+	[method:public abstract java.lang.Integer com.jshuabo.reportcenter.server.dao.serial.ISerialDataMapper.importIMEIData(java.util.List)
+	 with params: [[{"status":"应用文件存储路径","remarks":null,"customer":"https端口","warehouse":"应用日志路径","product":"应用名","serialNo":"服务器地址","price":0.0,"orderNo":"shutdown","serialDate":"描述","address":"http","billNo":"服务器路径","money":0.0,"quantity":0.0,"supplier":"ajp"},{"product":"端口","serialNo":"(M)","price":null,"serialDate":"端口","quantity":0.0},{"status":null,"customer":"8600.0","warehouse":"/var/storage/mobile/apks","product":"mobile","serialNo":"10.0.0.62","price":2048.0,"orderNo":"/usr/local/tomcat_servers/mobile_server","serialDate":"预装总服务端","address":"8700.0","billNo":"/var/tomcat_logs/mobile","money":9500.0,"quantity":0.0,"supplier":"8500.0"},{"serialNo":null},{"product":null,"serialNo":"https://10.0.0.62:8700/mobile"},{"status":null,"customer":"8701.0","warehouse":"/var/tomcat_logs/mobile_batchinstall_api","product":"mobile_batchinstall_api","serialNo":"10.0.0.62","price":0.0,"orderNo":"8501.0","serialDate":"装机接口","address":"58998.0","billNo":"/usr/local/tomcat_servers/mobile_batchinstall_api","money":2048.0,"quantity":0.0,]
+
+[report_center] 2014-11-27 10:49:04 167 5857945@qtp-32997440-4 com.jshuabo.frame.server.util.json.JacksonUtils.object2json(JacksonUtils.java:60)
+[ERROR] jackson object2json with JsonMappingException: No serializer found for class java.io.ByteArrayInputStream and no properties discovered to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) ) (through reference chain: org.springframework.web.multipart.commons.CommonsMultipartFile["fileItem"]->org.apache.commons.fileupload.disk.DiskFileItem["inputStream"])
+
+[report_center] 2014-11-27 10:49:04 167 5857945@qtp-32997440-4 com.jshuabo.frame.server.aop.service.locale.ExceptionLocaler.localeException(ExceptionLocaler.java:89)
+[ERROR] catching MyBatisSystemException [系统错误！请联系管理员。] : nested exception is org.apache.ibatis.binding.BindingException: Parameter '__frch_item_1' not found. Available parameters are [id, param1, listMap]
+	[method:public abstract java.lang.String com.jshuabo.reportcenter.server.service.serial.ISerialService.importExcelIMEI(org.springframework.web.multipart.MultipartFile)
+	 with params: ]
+
+[report_center] 2014-11-27 10:49:04 215 5857945@qtp-32997440-4 com.jshuabo.frame.server.util.json.JacksonUtils.object2json(JacksonUtils.java:60)
+[ERROR] jackson object2json with JsonMappingException: No serializer found for class java.util.Collections$1 and no properties discovered to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) ) (through reference chain: org.springframework.web.multipart.support.DefaultMultipartHttpServletRequest["request"]->org.apache.shiro.web.servlet.ShiroHttpServletRequest["request"]->org.mortbay.jetty.Request["context"]->org.mortbay.jetty.servlet.SContext["attributeNames"])
+
+[report_center] 2014-11-27 10:49:04 216 5857945@qtp-32997440-4 com.jshuabo.frame.server.aop.service.locale.ExceptionLocaler.localeException(ExceptionLocaler.java:89)
+[ERROR] catching MyBatisSystemException [系统错误！请联系管理员。] : nested exception is org.apache.ibatis.binding.BindingException: Parameter '__frch_item_1' not found. Available parameters are [id, param1, listMap]
+	[method:public java.lang.String com.jshuabo.reportcenter.server.web.controller.serial.SerialController.resolveExcelForWithH(javax.servlet.http.HttpServletRequest,org.springframework.web.multipart.MultipartFile)
+	 with params: ]
+

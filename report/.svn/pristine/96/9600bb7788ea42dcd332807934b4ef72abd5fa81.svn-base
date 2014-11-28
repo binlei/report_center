@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.finance.IReimDataMapper">
+	<resultMap type="ReimData" id="reimDataResultMap">
+		<id property="id" column="ID" />
+		<result property="serialNo" column="SERIAL_NO" />
+		<result property="customerName" column="CUSTOMER_NAME" />
+		<result property="stationAddress" column="STATION_ADDRESS" />
+		<result property="ngbossSaleQty" column="NGBOSS_SALEQTY" />
+		<result property="proCmccSaleQty" column="PROCMCC_SALEQTY" />
+		<result property="cityCmccSaleQty" column="CITYCMCC_SALEQTY" />
+		<result property="reimDate" column="REIM_DATE" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+		<result property="creatorId" column="CREATOR_ID" />
+		<result property="creator" column="CREATOR" />
+		<result property="createdTime" column="CREATED_TIME" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_REIMBURSEMENT_DATA;
+			CREATE TABLE T_REIMBURSEMENT_DATA
+			(
+			    ID INT(40) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			    SERIAL_NO VARCHAR(40) NOT NULL,
+			    CUSTOMER_NAME VARCHAR(255),
+			    STATION_ADDRESS VARCHAR(255),
+			    NGBOSS_SALEQTY DOUBLE DEFAULT 0,
+  				PROCMCC_SALEQTY DOUBLE DEFAULT 0,
+				CITYCMCC_SALEQTY DOUBLE DEFAULT 0,
+				REIM_DATE DATE,
+			    EXTEND_PROP1 VARCHAR(200),
+			    EXTEND_PROP2 VARCHAR(200),
+			    CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX SERIAL_NO_INDEX(SERIAL_NO)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="page" parameterType="map" resultType="ReimData" resultMap="reimDataResultMap">
+            SELECT * FROM T_REIMBURSEMENT_DATA WHERE 1=1
+            <if test="creatorId != 1">
+            	AND CREATOR_ID = #{creatorId}
+            </if>
+			<if test="serialNo != null">
+		    	AND SERIAL_NO LIKE CONCAT('%',#{serialNo},'%' )
+		  	</if>
+			<if test="customerName != null">
+		    	AND CUSTOMER_NAME LIKE CONCAT('%',#{customerName},'%' )
+		  	</if>
+            <if test="sortOrder != null">
+		    	ORDER BY ${sortOrder}
+		  	</if>
+            LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+            SELECT count(ID) FROM T_REIMBURSEMENT_DATA WHERE 1=1
+            <if test="creatorId != 1">
+            	AND CREATOR_ID = #{creatorId}
+            </if>
+			<if test="serialNo != null">
+		    	AND SERIAL_NO LIKE CONCAT('%',#{serialNo},'%' )
+		  	</if>
+			<if test="customerName != null">
+		    	AND CUSTOMER_NAME LIKE CONCAT('%',#{customerName},'%' )
+		  	</if>
+	</select>
+	
+	<select id="loadAll" parameterType="Long" resultType="String">
+        <![CDATA[
+            SELECT SERIAL_NO FROM T_REIMBURSEMENT_DATA WHERE CREATOR_ID = #{creatorId} GROUP BY SERIAL_NO HAVING COUNT(*) > 1
+        ]]>
+	</select>
+
+	<insert id="save" parameterType="java.util.List">
+		INSERT INTO T_REIMBURSEMENT_DATA (
+	        SERIAL_NO,
+		    CUSTOMER_NAME,
+		    STATION_ADDRESS,
+		    NGBOSS_SALEQTY,
+		    PROCMCC_SALEQTY,
+		    CITYCMCC_SALEQTY,
+		    REIM_DATE,
+		    EXTEND_PROP1,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES 
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.serialNo},#{item.customerName},#{item.stationAddress},#{item.ngbossSaleQty},
+			#{item.proCmccSaleQty},#{item.cityCmccSaleQty},#{item.reimDate},#{item.extendProp1},
+			#{item.creatorId},#{item.creator},#{item.createdTime})
+		</foreach>
+	</insert>
+	
+	<delete id="reimDataDelete" parameterType="String">
+		DELETE FROM T_REIMBURSEMENT_DATA WHERE ID = #{id}
+	</delete>
+	
+	<delete id="deleteMore">
+		DELETE FROM T_REIMBURSEMENT_DATA WHERE SERIAL_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<insert id="insertIntoOnIn">
+		INSERT INTO T_DELI_NOIN_REIM_DATA SELECT * FROM T_REIMBURSEMENT_DATA WHERE EXTEND_PROP1 = 0 AND SERIAL_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</insert>
+	
+	<delete id="delete"  parameterType="map">
+		DELETE FROM T_REIMBURSEMENT_DATA WHERE SERIAL_NO IN 
+		<foreach item="item" index="index" collection="serialNoList"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+		AND EXTEND_PROP1 = 0 AND CREATOR_ID = #{creatorId}
+	</delete>
+	
+	<select  id="getNotInDev"  resultType="String" >
+		SELECT SERIAL_NO FROM T_REIMBURSEMENT_DATA WHERE SERIAL_NO NOT IN (SELECT SERIAL_NO FROM T_DELIVERY_DATA)
+	</select>
+	
+	<update id="setToOne" parameterType="Long">
+		UPDATE T_REIMBURSEMENT_DATA SET EXTEND_PROP1 = 1 WHERE CREATOR_ID = #{creatorId}
+	</update>
+	
+	<delete id="deleteZero" parameterType="Long">
+		DELETE FROM T_REIMBURSEMENT_DATA WHERE EXTEND_PROP1 = 0 AND CREATOR_ID = #{creatorId}
+	</delete>
+	
+</mapper>

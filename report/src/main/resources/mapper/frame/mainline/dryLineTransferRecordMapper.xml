@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.mainline.IDryLineTransferRecordMapper">
+	<resultMap type="DryLineTransferRecord" id="dryLineTransferRecordResultMap">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="CARCARD" property="carcard" jdbcType="VARCHAR" />
+		<result column="OIL_CARD_NO" property="oilCardNo" jdbcType="VARCHAR" />
+		<result column="TRANSFER_DATE" property="transferDate" jdbcType="TIMESTAMP" />
+		<result column="TRANSFER_MONEY" property="transferMoney" jdbcType="DOUBLE" />
+		<result column="TRANSFER_ADDRESS" property="transferAddress" jdbcType="VARCHAR" />
+		<result column="DATE" property="date" jdbcType="TIMESTAMP" />
+		<result column="KIND" property="kind" jdbcType="VARCHAR" />
+		<result column="QUANTITY" property="quantity" jdbcType="DOUBLE" />
+		<result column="PRICE" property="price" jdbcType="DOUBLE" />
+		<result column="MONEY" property="money" jdbcType="DOUBLE" />
+		<result column="UNBILLED" property="unbilled" jdbcType="DOUBLE" />
+		<result column="EXTEND_PROP1" property="extendProp1" jdbcType="VARCHAR" />
+		<result column="EXTEND_PROP2" property="extendProp2" jdbcType="VARCHAR" />
+		<result column="EXTEND_PROP3" property="extendProp3" jdbcType="VARCHAR" />
+		<result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+		<result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+		<result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+		<result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+		<result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+		<result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+		
+		<association property="mainCard" column="MAIN_CARD" foreignColumn="CARD" 
+			javaType="com.jshuabo.reportcenter.server.model.mainline.DryLineRechargeRecord" 
+			select="com.jshuabo.reportcenter.server.dao.mainline.IDryLineRechargeRecordMapper.selectByCard" >
+			<id column="ID" property="id" jdbcType="BIGINT" />
+			<result column="CARD" property="card" jdbcType="VARCHAR" />
+		    <result column="UNBILLED" property="unbilled" jdbcType="DOUBLE" />
+		</association>
+	</resultMap>
+
+	  <sql id="Base_Column_List" >
+	    ID, MAIN_CARD, CARCARD, OIL_CARD_NO, TRANSFER_DATE, TRANSFER_MONEY, TRANSFER_ADDRESS, DATE, KIND, 
+	    QUANTITY, PRICE, MONEY, UNBILLED, EXTEND_PROP1, EXTEND_PROP2, EXTEND_PROP3, CREATOR_ID, 
+	    CREATOR, CREATED_TIME, LAST_OPERATOR_ID, LAST_OPERATOR, LAST_OPERATED_TIME
+	  </sql>
+	  
+  	<select id="selectViceCards" parameterType="Long" resultMap="dryLineTransferRecordResultMap">
+  		SELECT ID, CARCARD, OIL_CARD_NO, TRANSFER_DATE, TRANSFER_MONEY, TRANSFER_ADDRESS, DATE, KIND, 
+	    		QUANTITY, PRICE, MONEY, UNBILLED FROM t_dryline_transfer_record t WHERE t.MAIN_CARD = #{id}
+  	</select>
+
+	<select id="page" parameterType="map" resultMap="dryLineTransferRecordResultMap">
+            SELECT <include refid="Base_Column_List"/> FROM t_dryline_transfer_record WHERE 1 = 1
+			<if test="mainCard != null">
+		    	AND MAIN_CARD LIKE CONCAT('%',#{mainCard},'%')
+		  	</if>
+			<if test="carcard != null">
+		    	AND CARCARD LIKE CONCAT('%',#{carcard},'%')
+		  	</if>
+			<if test="oilCardNo != null">
+		    	AND OIL_CARD_NO LIKE CONCAT('%',#{oilCardNo},'%')
+		  	</if>
+		  	<if test="beginTime != null">
+				AND TRANSFER_DATE &gt;= CONCAT(#{beginTime},'00:00:00')
+			</if>
+			<if test="endTime != null">
+				AND TRANSFER_DATE &lt;= CONCAT(#{endTime},'23:59:59')
+			</if>
+			<if test="type != null">
+				AND EXTEND_PROP1 = #{type}
+			</if>
+            <if test="sortOrder != null">
+		    	ORDER BY ${sortOrder}
+		  	</if>
+            <if test="offset != null">
+	         	LIMIT #{offset}, 
+	        </if>
+	        <if test="rows != null">
+	         	#{rows}
+	        </if>
+	</select>
+	
+	<select id="pageBalance" parameterType="map"  resultMap="dryLineTransferRecordResultMap">
+            SELECT t.CARCARD, t.OIL_CARD_NO, SUM(t.TRANSFER_MONEY) - SUM(t.MONEY) AS UNBILLED
+				FROM
+					t_dryline_transfer_record t
+			WHERE 1 = 1
+			<if test="mainCard != null">
+		    	AND MAIN_CARD LIKE CONCAT('%',#{mainCard},'%')
+		  	</if>
+			<if test="carcard != null">
+		    	AND CARCARD LIKE CONCAT('%',#{carcard},'%')
+		  	</if>
+			<if test="oilCardNo != null">
+		    	AND OIL_CARD_NO LIKE CONCAT('%',#{oilCardNo},'%')
+		  	</if>
+		  		GROUP BY t.CARCARD
+            <if test="sortOrder != null">
+		    	ORDER BY ${sortOrder}
+		  	</if>
+            <if test="offset != null">
+	         	LIMIT #{offset}, 
+	        </if>
+	        <if test="rows != null">
+	         	#{rows}
+	        </if>
+	</select>
+	
+	<select id="pageBalanceTotal" parameterType="map" resultType="Long">
+            SELECT count(1) FROM ( SELECT t.CARCARD, t.OIL_CARD_NO, SUM(t.TRANSFER_MONEY) - SUM(t.MONEY) AS UNBILLED
+				FROM
+					t_dryline_transfer_record t
+			WHERE 1 = 1
+			<if test="mainCard != null">
+		    	AND MAIN_CARD LIKE CONCAT('%',#{mainCard},'%')
+		  	</if>
+			<if test="carcard != null">
+		    	AND CARCARD LIKE CONCAT('%',#{carcard},'%')
+		  	</if>
+			<if test="oilCardNo != null">
+		    	AND OIL_CARD_NO LIKE CONCAT('%',#{oilCardNo},'%')
+		  	</if>
+		  	GROUP BY t.CARCARD ) AS m
+	</select>
+
+	<select id="getUnbilled" parameterType="String" resultType="DryLineTransferRecord" resultMap="dryLineTransferRecordResultMap">
+		SELECT OIL_CARD_NO, ROUND((SUM(IFNULL(T.TRANSFER_MONEY,0)) - SUM(IFNULL(T.MONEY,0))), 2) AS UNBILLED  FROM t_dryline_transfer_record T  WHERE 1 = 1
+		<if test="oilCardNo != null">
+	    	AND T.OIL_CARD_NO LIKE CONCAT('%',#{oilCardNo},'%')
+	  	</if>
+		GROUP BY OIL_CARD_NO
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+            SELECT count(1) FROM t_dryline_transfer_record A WHERE 1 = 1
+			<if test="mainCard != null">
+		    	AND MAIN_CARD LIKE CONCAT('%',#{mainCard},'%')
+		  	</if>
+			<if test="carcard != null">
+		    	AND CARCARD LIKE CONCAT('%',#{carcard},'%')
+		  	</if>
+			<if test="oilCardNo != null">
+		    	AND OIL_CARD_NO LIKE CONCAT('%',#{oilCardNo},'%')
+		  	</if>
+		  	<if test="beginTime != null">
+				AND TRANSFER_DATE &gt;= CONCAT(#{beginTime},'00:00:00')
+			</if>
+			<if test="endTime != null">
+				AND TRANSFER_DATE &lt;= CONCAT(#{endTime},'23:59:59')
+			</if>
+			<if test="type != null">
+				AND EXTEND_PROP1 = #{type}
+			</if>
+	</select>
+
+	<delete id="deleteByIds" parameterType="String">
+		DELETE FROM t_dryline_transfer_record WHERE ID IN
+		<foreach item="item" index="index" collection="ids"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<!-- 导入  圈存 记录 -->
+	<insert id="importDepositRecord"  parameterType="java.util.List">
+		<selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+	  		SELECT LAST_INSERT_ID()
+	  	</selectKey>
+		insert into t_dryline_transfer_record (
+			CARCARD, OIL_CARD_NO, TRANSFER_DATE, TRANSFER_MONEY, TRANSFER_ADDRESS,UNBILLED,EXTEND_PROP1,MONEY,MAIN_CARD,
+			CREATOR_ID, CREATOR, CREATED_TIME
+		)
+		values 
+			<foreach collection="listMap" item="item"  separator=","  >
+				(#{item.carcard,jdbcType=BIGINT},
+				#{item.oilCardNo,jdbcType=VARCHAR},
+				#{item.transferDate,jdbcType=TIMESTAMP},
+				#{item.transferMoney,jdbcType=DOUBLE},
+				#{item.transferAddress,jdbcType=VARCHAR},
+				#{item.unbilled,jdbcType=DOUBLE},
+				'DEPOSIT',0,#{item.mainCard,jdbcType=VARCHAR},
+				#{creatorId},#{creator},#{createdTime})
+			</foreach>
+	</insert>
+	
+	<!-- 导入  消费 记录 -->
+	<insert id="importConsumptionRecord"  parameterType="java.util.List">
+		<selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+	  		SELECT LAST_INSERT_ID()
+	  	</selectKey>
+		insert into t_dryline_transfer_record (
+			CARCARD, OIL_CARD_NO, TRANSFER_DATE, KIND, QUANTITY,
+			PRICE, MONEY,UNBILLED,EXTEND_PROP1,TRANSFER_MONEY,MAIN_CARD,
+			CREATOR_ID, CREATOR, CREATED_TIME
+		)
+		values 
+			<foreach collection="listMap" item="item"  separator=","  >
+				(#{item.carcard,jdbcType=BIGINT},#{item.oilCardNo,jdbcType=VARCHAR},#{item.transferDate,jdbcType=TIMESTAMP},
+					#{item.kind,jdbcType=VARCHAR},#{item.quantity,jdbcType=DOUBLE},#{item.price,jdbcType=DOUBLE},
+					#{item.money,jdbcType=DOUBLE},#{item.unbilled,jdbcType=DOUBLE},'CONSUMPTION',0,#{item.mainCard,jdbcType=VARCHAR},
+					#{creatorId},#{creator},#{createdTime})
+			</foreach>
+	</insert>
+	
+	<!-- 全部导入 -->
+	<insert id="importRecord"  parameterType="java.util.List">
+		<selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+	  		SELECT LAST_INSERT_ID()
+	  	</selectKey>
+		insert into t_dryline_transfer_record (
+			CARCARD, OIL_CARD_NO, 
+			TRANSFER_DATE, TRANSFER_MONEY, TRANSFER_ADDRESS,
+			KIND, QUANTITY, PRICE, MONEY,UNBILLED,EXTEND_PROP1,
+			CREATOR_ID, CREATOR, CREATED_TIME
+		)
+		values 
+			<foreach collection="listMap" item="item"  separator=","  >
+				(#{item.carcard,jdbcType=BIGINT},#{item.oilCardNo,jdbcType=VARCHAR},#{item.transferDate,jdbcType=TIMESTAMP},
+					#{item.kind,jdbcType=VARCHAR},#{item.quantity,jdbcType=DOUBLE},#{item.price,jdbcType=DOUBLE},
+					#{item.money,jdbcType=DOUBLE},#{item.unbilled,jdbcType=DOUBLE},#{flag},0,
+					#{creatorId},#{creator},#{createdTime})
+			</foreach>
+	</insert>
+	
+	<select id="getAllOilCardNoBalance" resultType="Map">
+		SELECT t.OIL_CARD_NO,SUM(t.TRANSFER_MONEY) - SUM(t.MONEY) AS UNBILLED FROM t_dryline_transfer_record t GROUP BY t.OIL_CARD_NO,t.CARCARD
+	</select>
+</mapper>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="report_center">
+        <wb-resource deploy-path="/WEB-INF/web.xml" source-path="/src/main/webapp/WEB-INF/web.xml"/>
+        <wb-resource deploy-path="/" source-path="/target/m2e-jee/web-resources"/>
+        <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
+        <dependent-module archiveName="memory-webapp-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/memory-webapp/memory-webapp">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="memory-core-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/memory-core/memory-core">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="memory-persist-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/memory-persist/memory-persist">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="memory-model-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/memory-model/memory-model">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="memory-exception-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/memory-exception/memory-exception">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="memory-util-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/memory-util/memory-util">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="memory-security-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/memory-security/memory-security">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <property name="context-root" value="report_center"/>
+        <property name="java-output-path" value="/report_center/target/classes"/>
+    </wb-module>
+</project-modules>

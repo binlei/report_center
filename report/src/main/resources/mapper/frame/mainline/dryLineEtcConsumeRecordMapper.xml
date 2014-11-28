@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jshuabo.reportcenter.server.dao.mainline.IDryLineEtcConsumeRecordMapper" >
+	<resultMap id="DryLineEtcConsumeRecordResultMap" type="DryLineEtcConsumeRecord" >
+	  <id column="ID" property="id" jdbcType="BIGINT" />
+	  <result column="CARCARD" property="carcard" jdbcType="VARCHAR" />
+	  <result column="ETC_NO" property="etcNo" jdbcType="VARCHAR" />
+	  <result column="RECHARGE_DATE" property="rechargeDate" jdbcType="TIMESTAMP" />
+	  <result column="RECHARGE_MONEY" property="rechargeMoney" jdbcType="DOUBLE" />
+	  <result column="IN_STATION_NAME" property="inStationName" jdbcType="VARCHAR" />
+	  <result column="IN_STATION_STARTTIME" property="inStationStarttime" jdbcType="TIMESTAMP" />
+	  <result column="OUT_STATION_NAME" property="outStationName" jdbcType="VARCHAR" />
+	  <result column="OUT_STATION_STARTTIME" property="outStationStarttime" jdbcType="TIMESTAMP" />
+	  <result column="ACTUAL_AMOUNT" property="actualAmount" jdbcType="DOUBLE" />
+	  <result column="ETC_BALANCE" property="etcBalance" jdbcType="DOUBLE" />
+	  <result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+	  <result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+	  <result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+	  <result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+	  <result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+	  <result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		ID, CARCARD,ETC_NO, RECHARGE_DATE, RECHARGE_MONEY,
+		IN_STATION_NAME, IN_STATION_STARTTIME,
+		OUT_STATION_NAME, OUT_STATION_STARTTIME, ACTUAL_AMOUNT, ETC_BALANCE, CREATOR_ID,
+		CREATOR, CREATED_TIME, LAST_OPERATOR_ID, LAST_OPERATOR,
+		LAST_OPERATED_TIME
+	</sql>
+
+	<select id="page" parameterType="Map" resultMap="DryLineEtcConsumeRecordResultMap">
+		select <include refid="Base_Column_List" /> from t_dryline_etc_consume_record
+			where 1 = 1
+		<if test="carcard != null">
+			AND CARCARD = #{carcard}
+		</if>
+		<if test="etcNo != null">
+			AND ETC_NO = #{etcNo}
+		</if>
+		<if test="beginTime != null">
+			AND RECHARGE_DATE &gt;= CONCAT(#{beginTime},' 00:00:00')
+		</if>
+		<if test="endTime != null">
+			AND RECHARGE_DATE &lt;= CONCAT(#{endTime},' 23:59:59')
+		</if>
+		<if test="sortOrder != null">
+			ORDER BY ${sortOrder}
+		</if>
+		<if test="offset != null">
+			LIMIT #{offset},#{rows}
+        </if>
+	</select>
+	
+	<select id="total" parameterType="Map" resultType="Long">
+		select count(1) from t_dryline_etc_consume_record
+			where 1 = 1 
+		<if test="carcard != null">
+			AND CARCARD = #{carcard}
+		</if>
+		<if test="etcNo != null">
+			AND ETC_NO = #{etcNo}
+		</if>
+		<if test="beginTime != null">
+			AND RECHARGE_DATE &gt;= CONCAT(#{beginTime},' 00:00:00')
+		</if>
+		<if test="endTime != null">
+			AND RECHARGE_DATE &lt;= CONCAT(#{endTime},' 23:59:59')
+		</if>
+	</select>
+
+	<select id="selectById" resultMap="DryLineEtcConsumeRecordResultMap" parameterType="java.lang.Long">
+		select 
+			ID, CARCARD,ETC_NO, RECHARGE_DATE, RECHARGE_MONEY,
+			IN_STATION_NAME, IN_STATION_STARTTIME,
+			OUT_STATION_NAME, OUT_STATION_STARTTIME, ACTUAL_AMOUNT, ETC_BALANCE, CREATOR_ID,
+			CREATOR, CREATED_TIME, LAST_OPERATOR_ID, LAST_OPERATOR,
+			LAST_OPERATED_TIME
+	    from t_dryline_etc_consume_record
+			where ID = #{id,jdbcType=BIGINT}
+	</select>
+
+	<delete id="deleteByIds">
+		DELETE FROM t_dryline_etc_consume_record WHERE ID IN
+		<foreach item="item" index="index" collection="ids" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<insert id="insert" parameterType="Map">
+		insert into t_dryline_etc_consume_record
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="carcard != null">
+				CARCARD,
+			</if>
+			<if test="etcNo != null">
+				ETC_NO,
+			</if>
+			<if test="rechargeDate != null">
+				RECHARGE_DATE,
+			</if>
+			<if test="rechargeMoney != null">
+				RECHARGE_MONEY,
+			</if>
+			<if test="inStationName != null">
+				IN_STATION_NAME,
+			</if>
+			<if test="inStationStarttime != null">
+				IN_STATION_STARTTIME,
+			</if>
+			<if test="outStationName != null">
+				OUT_STATION_NAME,
+			</if>
+			<if test="outStationStarttime != null">
+				OUT_STATION_STARTTIME,
+			</if>
+			<if test="actualAmount != null">
+				ACTUAL_AMOUNT,
+			</if>
+			<if test="etcBalance != null">
+				ETC_BALANCE,
+			</if>
+				CREATOR_ID,
+				CREATOR,
+				CREATED_TIME
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="carcard != null">
+				#{carcard,jdbcType=VARCHAR},
+			</if>
+			<if test="etcNo != null">
+				#{etcNo,jdbcType=VARCHAR},
+			</if>
+			<if test="rechargeDate != null">
+				#{rechargeDate,jdbcType=TIMESTAMP},
+			</if>
+			<if test="rechargeMoney != null">
+				#{rechargeMoney,jdbcType=DOUBLE},
+			</if>
+			<if test="inStationName != null">
+				#{inStationName,jdbcType=VARCHAR},
+			</if>
+			<if test="inStationStarttime != null">
+				#{inStationStarttime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="outStationName != null">
+				#{outStationName,jdbcType=VARCHAR},
+			</if>
+			<if test="outStationStarttime != null">
+				#{outStationStarttime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="actualAmount != null">
+				#{actualAmount,jdbcType=DOUBLE},
+			</if>
+			<if test="etcBalance != null">
+				#{etcBalance,jdbcType=DOUBLE},
+			</if>
+				#{creatorId,jdbcType=BIGINT},
+				#{creator,jdbcType=VARCHAR},
+				#{createdTime,jdbcType=TIMESTAMP}
+		</trim>
+	</insert>
+
+	<update id="update" parameterType="Map">
+		update t_dryline_etc_consume_record
+		<set>
+			<if test="carcard != null">
+				CARCARD = #{carcard,jdbcType=VARCHAR},
+			</if>
+			<if test="etcNo != null">
+				ETC_NO = #{etcNo,jdbcType=VARCHAR},
+			</if>
+			<if test="rechargeDate != null">
+				RECHARGE_DATE = #{rechargeDate,jdbcType=TIMESTAMP},
+			</if>
+			<if test="rechargeMoney != null">
+				RECHARGE_MONEY = #{rechargeMoney,jdbcType=DOUBLE},
+			</if>
+			<if test="inStationName != null">
+				IN_STATION_NAME = #{inStationName,jdbcType=VARCHAR},
+			</if>
+			<if test="inStationStarttime != null">
+				IN_STATION_STARTTIME = #{inStationStarttime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="outStationName != null">
+				OUT_STATION_NAME = #{outStationName,jdbcType=VARCHAR},
+			</if>
+			<if test="outStationStarttime != null">
+				OUT_STATION_STARTTIME = #{outStationStarttime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="actualAmount != null">
+				ACTUAL_AMOUNT = #{actualAmount,jdbcType=DOUBLE},
+			</if>
+			<if test="etcBalance != null">
+				ETC_BALANCE = #{etcBalance,jdbcType=DOUBLE},
+			</if>
+				LAST_OPERATOR_ID = #{lastOperatorId,jdbcType=BIGINT},
+				LAST_OPERATOR = #{lastOperator,jdbcType=VARCHAR},
+				LAST_OPERATED_TIME = #{lastOperatedTime,jdbcType=TIMESTAMP}
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+	<insert id="importEtcConsumeRecord"  parameterType="java.util.List">
+		<selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+	  		SELECT LAST_INSERT_ID()
+	  	</selectKey>
+		insert into t_dryline_etc_consume_record (
+			ETC_NO,CARCARD, RECHARGE_DATE, RECHARGE_MONEY, 
+			IN_STATION_NAME, IN_STATION_STARTTIME,
+			OUT_STATION_NAME, OUT_STATION_STARTTIME, ACTUAL_AMOUNT,ETC_BALANCE, 
+			CREATOR_ID, CREATOR, CREATED_TIME
+		)
+		values 
+			<foreach collection="listMap" item="item" separator=",">
+				(#{item.etcNo,jdbcType=VARCHAR},
+				#{item.carcard,jdbcType=VARCHAR},
+				#{item.rechargeDate,jdbcType=TIMESTAMP},
+				#{item.rechargeMoney,jdbcType=DOUBLE},
+ 				#{item.inStationName,jdbcType=VARCHAR},
+				#{item.inStationStarttime,jdbcType=TIMESTAMP},
+				#{item.outStationName,jdbcType=VARCHAR},
+				#{item.outStationStarttime,jdbcType=TIMESTAMP},
+				#{item.actualAmount,jdbcType=DOUBLE},
+				#{item.etcBalance,jdbcType=DOUBLE},
+				
+				#{creatorId,jdbcType=BIGINT},
+				#{creator,jdbcType=VARCHAR},
+				#{createdTime,jdbcType=TIMESTAMP})
+			</foreach>
+	</insert>
+
+</mapper>

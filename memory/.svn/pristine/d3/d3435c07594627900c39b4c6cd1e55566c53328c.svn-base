@@ -1,0 +1,3 @@
+SUCCESS=sucessfully
+FAIL=failed
+TIMEOUT=timeout, please login again

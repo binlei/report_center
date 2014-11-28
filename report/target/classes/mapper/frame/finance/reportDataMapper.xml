@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.finance.IReportDataMapper">
+	<select id="page" parameterType="map" resultType="ImportReportData">
+        select y.orderLot, y.serialNo, y.itemCode, y.customerName, y.stationAddress, y.deliveryDate, y.deliveryMonth, 
+		y.quantity, y.jsQuantity, y.ngbossSaleQty, y.proCmccSaleQty, y.cityCmccSaleQty, y.channelQty, 
+		y.ngbossSaledNoRemQty, y.returnQty, y.saleDate, y.status, y.hallProperty
+		from 
+		(
+		    SELECT
+			 x.orderLot
+			,x.serialNo
+			,x.itemCode
+			,x.customerName
+			,x.stationAddress
+			,x.deliveryDate
+			,x.deliveryMonth
+			,x.quantity
+			,x.jsQuantity
+			,x.ngbossSaleQty
+			,x.proCmccSaleQty
+			,x.cityCmccSaleQty
+			,x.channelQty
+			,x.ngbossSaledNoRemQty
+			,x.returnQty
+			,x.saleDate
+			,CASE 
+				WHEN x.returnQty = 1 THEN '已退货'
+			   	ELSE
+			     	CASE
+			       		WHEN x.proCmccSaleQty + x.cityCmccSaleQty > 0
+			         		THEN CASE WHEN x.ngbossSaleQty=1 THEN '已报帐' 
+		         			ELSE '未销售已报帐' 
+		         		END
+			       		ELSE
+			         		CASE
+			           			WHEN x.ngbossSaleQty = 1 THEN '已销售未报账'
+			           			ELSE '已发货未销售'
+			         	END
+			     	END
+			 END status
+			,x.hallProperty
+		    FROM
+			(
+				SELECT DISTINCT
+		         a.ORDER_LOT orderLot
+		        ,a.SERIAL_NO serialNo
+		        ,a.ITEM_CODE itemCode
+		        ,a.CUSTOMER_NAME customerName
+		        ,a.STATION_ADDRESS stationAddress
+		        ,a.DELIVERY_DATE deliveryDate
+		        ,a.DELIVERY_DATE deliveryMonth
+		        ,a.QUANTITY quantity
+		        ,IFNULL(a.QUANTITY,0) - IFNULL(c.PROCMCC_SALEQTY,0) - IFNULL(c.CITYCMCC_SALEQTY,0) - IFNULL(d.RETURN_QTY,0) jsQuantity
+				,IFNULL(b.NGBOSS_SALEQTY,0) ngbossSaleQty
+				,IFNULL(c.PROCMCC_SALEQTY,0) proCmccSaleQty
+				,IFNULL(c.CITYCMCC_SALEQTY,0) cityCmccSaleQty
+				,IFNULL(a.QUANTITY,0) - IFNULL(b.NGBOSS_SALEQTY,0) - IFNULL(d.RETURN_QTY,0) channelQty
+		        ,IFNULL(b.NGBOSS_SALEQTY,0) - IFNULL(c.PROCMCC_SALEQTY,0) - IFNULL(c.CITYCMCC_SALEQTY,0) ngbossSaledNoRemQty
+		        ,b.SALE_DATE saleDate
+		        ,'未知' status
+		        ,IFNULL(b.HALL_PROPERTY, a.HALL_PROPERTY) hallProperty
+		        ,IFNULL(d.RETURN_QTY,0) returnQty
+		       	FROM
+				t_delivery_data a
+				LEFT JOIN t_sales_data b ON a.SERIAL_NO = b.SERIAL_NO
+				LEFT JOIN t_reimbursement_data c ON a.SERIAL_NO = c.SERIAL_NO
+				LEFT JOIN t_return_data d ON a.SERIAL_NO = d.SERIAL_NO
+		       	WHERE
+		        1 = 1 
+		        <if test="creatorId != 1">
+	            	AND a.CREATOR_ID = #{creatorId}
+	            </if>
+				<if test="beginTime != null">
+       				AND a.DELIVERY_DATE &gt;= #{beginTime}
+       			</if>
+       			<if test="endTime != null">
+					AND a.DELIVERY_DATE &lt;= #{endTime}
+				</if>
+ 				<if test="proCmccSaleQty != null">
+				  	<if test="proCmccSaleQty == 1">
+				    	AND c.PROCMCC_SALEQTY = 1
+				  	</if>
+				  	<if test="proCmccSaleQty == 0">
+				    	AND c.CITYCMCC_SALEQTY = 1
+				  	</if>
+			 	</if>
+			  	<if test="stationAddress != null">
+			    	AND a.STATION_ADDRESS LIKE CONCAT('%',#{stationAddress},'%' )
+			  	</if>
+			  	<if test="hallProperty != null">
+			    	AND a.HALL_PROPERTY LIKE CONCAT('%',#{hallProperty},'%' )
+			  	</if>
+			  	<if test="serialNo != null">
+			    	AND a.SERIAL_NO LIKE CONCAT('%',#{serialNo},'%' )
+			  	</if>
+			) x
+		) y
+		where 1=1
+		<if test="status != null">
+	    	AND y.status = #{status}
+	  	</if>
+	  	<if test="sortOrder != null">
+	    	ORDER BY ${sortOrder}
+	  	</if>
+        <if test="offset != null">
+         LIMIT 
+         #{offset}, 
+        </if>
+        <if test="rows != null">
+         #{rows}
+        </if>
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+        select COUNT(z.serialNo) from (
+			select y.serialNo, y.status
+			from 
+			(
+			    SELECT
+				 x.serialNo
+				,CASE 
+					WHEN x.returnQty = 1 THEN '已退货'
+				   	ELSE
+				     	CASE
+				       		WHEN x.proCmccSaleQty + x.cityCmccSaleQty > 0
+				         		THEN CASE WHEN x.ngbossSaleQty=1 THEN '已报帐' 
+			         			ELSE '未销售已报帐' 
+			         		END
+				       		ELSE
+				         		CASE
+				           			WHEN x.ngbossSaleQty = 1 THEN '已销售未报账'
+				           			ELSE '已发货未销售'
+				         	END
+				     	END
+				 END status
+			    FROM
+				(
+					SELECT DISTINCT
+			         a.SERIAL_NO serialNo
+			        ,a.STATION_ADDRESS stationAddress
+			        ,a.DELIVERY_DATE deliveryDate
+					,IFNULL(b.NGBOSS_SALEQTY,0) ngbossSaleQty
+					,IFNULL(c.PROCMCC_SALEQTY,0) proCmccSaleQty
+					,IFNULL(c.CITYCMCC_SALEQTY,0) cityCmccSaleQty
+					,IFNULL(d.RETURN_QTY,0) returnQty
+					,'未知' status
+					,b.HALL_PROPERTY hallProperty
+			       	FROM
+					t_delivery_data a
+					LEFT JOIN t_sales_data b ON a.SERIAL_NO = b.SERIAL_NO
+					LEFT JOIN t_reimbursement_data c ON a.SERIAL_NO = c.SERIAL_NO
+					LEFT JOIN t_return_data d ON a.SERIAL_NO = d.SERIAL_NO
+			       	WHERE
+			        1 = 1 
+			        <if test="creatorId != 1">
+		            	AND a.CREATOR_ID = #{creatorId}
+		            </if>
+					<if test="beginTime != null">
+	       				AND a.DELIVERY_DATE &gt;= #{beginTime}
+	       			</if>
+	       			<if test="endTime != null">
+						AND a.DELIVERY_DATE &lt;= #{endTime}
+					</if>
+	 				<if test="proCmccSaleQty != null">
+					  	<if test="proCmccSaleQty == 1">
+					    	AND c.PROCMCC_SALEQTY = 1
+					  	</if>
+					  	<if test="proCmccSaleQty == 0">
+					    	AND c.CITYCMCC_SALEQTY = 1
+					  	</if>
+				 	</if>	
+				  	<if test="stationAddress != null">
+				    	AND a.STATION_ADDRESS LIKE CONCAT('%',#{stationAddress},'%' )
+				  	</if>
+				  	<if test="hallProperty != null">
+				    	AND a.HALL_PROPERTY LIKE CONCAT('%',#{hallProperty},'%' )
+				  	</if>
+				) x
+			) y
+			where 1=1
+			<if test="status != null">
+		    	AND y.status = #{status}
+		  	</if>
+	  	) z
+	</select>
+</mapper>

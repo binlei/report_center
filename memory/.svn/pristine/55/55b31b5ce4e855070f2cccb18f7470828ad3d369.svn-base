@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.frame.server.dao.security.IUserRoleMapper">
+	<resultMap type="UserRole" id="userRoleResultMap">
+		<id property="id" column="ID" />
+		<result property="userId" column="USER_ID" />
+		<result property="roleId" column="ROLE_ID" />
+		<result property="enabled" column="ENABLED" />
+
+		<result property="info.creatorId" column="CREATOR_ID" />
+		<result property="info.creator" column="CREATOR" />
+		<result property="info.createdTime" column="CREATED_TIME" />
+		<result property="info.lastOperatorId" column="LAST_OPERATOR_ID" />
+		<result property="info.lastOperator" column="LAST_OPERATOR" />
+		<result property="info.lastOperatedTime" column="LAST_OPERATED_TIME" />
+	</resultMap>
+
+	<!-- <cache /> -->
+
+	<sql id="createTable">
+		<![CDATA[		
+			DROP TABLE IF EXISTS M_USER_ROLE;
+			CREATE TABLE M_USER_ROLE
+			(
+				ID BIGINT(20) NOT NULL PRIMARY	KEY AUTO_INCREMENT,
+				USER_ID BIGINT(20),
+				ROLE_ID BIGINT(20),
+				ENABLED BOOLEAN DEFAULT 0,
+				CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				FOREIGN KEY (USER_ID) REFERENCES M_USER(ID),
+				FOREIGN KEY (ROLE_ID) REFERENCES M_ROLE(ID),
+				INDEX USER_ID_INDEX(USER_ID),
+				INDEX ROLE_ID_INDEX(ROLE_ID)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="load" parameterType="Long" resultType="UserRole" resultMap="userRoleResultMap">
+        <![CDATA[
+            SELECT * FROM M_USER_ROLE WHERE ID = #{id} 
+        ]]>
+	</select>
+	<select id="loadAll" resultType="UserRole" resultMap="userRoleResultMap">
+        <![CDATA[
+            SELECT * FROM M_USER_ROLE
+        ]]>
+	</select>
+	
+	<select id="loadListByUserId" parameterType="Long" resultType="UserRole" resultMap="userRoleResultMap">
+        <![CDATA[
+            SELECT * FROM M_USER_ROLE WHERE USER_ID = #{userId}
+        ]]>
+	</select>
+	<select id="loadIdsByUserId" parameterType="Long" resultType="Long" >
+        <![CDATA[
+            SELECT ROLE_ID FROM M_USER_ROLE WHERE USER_ID = #{userId}
+        ]]>
+	</select>
+	
+	<select id="loadListByRoleId" parameterType="Long" resultType="UserRole" resultMap="userRoleResultMap">
+        <![CDATA[
+            SELECT * FROM M_USER_ROLE WHERE ROLE_ID = #{roleId}
+        ]]>
+	</select>
+	<select id="loadIdsByRoleId" parameterType="Long" resultType="Long" >
+        <![CDATA[
+            SELECT USER_ID FROM M_USER_ROLE WHERE ROLE_ID = #{roleId}
+        ]]>
+	</select>
+
+	<insert id="save" parameterType="UserRole" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO M_USER_ROLE (
+			ID,USER_ID, ROLE_ID, ENABLED,CREATOR_ID,CREATOR,CREATED_TIME
+		) VALUES (
+			#{id},#{userId},#{roleId},#{enabled},#{creatorId},#{creator},#{createdTime}
+		)
+	</insert>
+
+	<update id="update" parameterType="UserRole">
+		UPDATE M_USER_ROLE
+		SET
+			USER_ID = #{userId},
+			ROLE_ID = #{roleId},
+			ENABLED = #{enabled}
+			LAST_OPERATOR_ID = #{lastOperatorId},
+			LAST_OPERATOR = #{lastOperator},
+			LAST_OPERATED_TIME = #{lastOperatedTime},
+		WHERE ID = #{id}
+	</update>
+
+	<delete id="delete" parameterType="UserRole">
+		<![CDATA[
+			DELETE FROM M_USER_ROLE WHERE ID = #{id}
+		]]>
+	</delete>
+
+	<delete id="deleteById" parameterType="Long">
+		<![CDATA[
+			DELETE FROM M_USER_ROLE WHERE ID = #{id}
+		]]>
+	</delete>
+	<delete id="deleteByUserId" parameterType="Long">
+		<![CDATA[
+			DELETE FROM M_USER_ROLE WHERE USER_ID = #{userId}
+		]]>
+	</delete>
+	<delete id="deleteByRoleId" parameterType="Long">
+		<![CDATA[
+			DELETE FROM M_USER_ROLE WHERE ROLE_ID = #{roleId}
+		]]>
+	</delete>
+	<delete id="deleteBindUser" parameterType="map">
+		DELETE FROM M_USER_ROLE WHERE ROLE_ID = #{roleId}
+		AND USER_ID IN 
+		<foreach collection="userIds" index="index" item="item" 
+			open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	<delete id="deleteBindRole" parameterType="map">
+		DELETE FROM M_USER_ROLE WHERE USER_ID = #{userId}
+		AND ROLE_ID IN 
+		<foreach collection="roleIds" index="index" item="item" 
+			open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- 先清空 之前 绑定 的 角色 -->
+	<delete id="clearRoleByUid" parameterType="Long">
+		delete from M_USER_ROLE WHERE USER_ID = #{uid,jdbcType=BIGINT}
+	</delete>
+	
+	<!-- 清空 角色之后在  重新绑定 新角色 -->
+	<insert id="confirmBindRole">
+		<selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		insert into M_USER_ROLE (USER_ID,ROLE_ID)
+			values
+		<foreach collection="rids" item="ids" separator=",">
+			(#{uid,jdbcType=BIGINT},#{ids,jdbcType=BIGINT})
+		</foreach>
+	</insert>
+</mapper>

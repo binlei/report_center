@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.mainline.IDryLineCarRecordMapper">
+	<resultMap type="dryLineCarRecord" id="dryLineCarRecordResultMap">
+		<id property="id" column="ID" />
+		<result property="date" column="DATE" />
+		<result property="company" column="COMPANY" />
+		<result property="brand" column="BRAND" />
+		<result property="carKind" column="CARKIND" />
+		<result property="price" column="PRICE" />
+		<result property="capacity" column="CAPACITY" />
+		<result property="carCard" column="CARCARD" />
+		<result property="oilCard" column="OILCARD" />
+		<result property="etcCard" column="ETCCARD" />
+		<result property="amortizeAge" column="AMORTIZE_AGE" />
+		<result property="salvageValue" column="SALVAGE_VALUE" />
+		<result property="oldMoney" column="OLDMONEY" />
+		<result property="allMoney" column="ALLMONEY" />
+		<result property="notMoney" column="NOTMONEY" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+		<result property="extendProp3" column="EXTEND_PROP3" />
+		
+	    <result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+	    <result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+	    <result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+	    <result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+	    <result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+	    <result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_DRYLINE_CAR_RECORD;
+			CREATE TABLE T_DRYLINE_CAR_RECORD
+			(
+			    ID INT(40) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			    DATE DATE,
+				COMPANY VARCHAR (40),
+				BRAND VARCHAR(40),
+				CARKIND VARCHAR(40),
+				PRICE DOUBLE,
+				CAPACITY DOUBLE,
+				CARCARD VARCHAR(40),
+				OILCARD VARCHAR(40),
+				ETCCARD VARCHAR(40),
+				AMORTIZE_AGE DOUBLE,
+				SALVAGE_VALUE DOUBLE,
+				OLDMONEY DOUBLE,
+				ALLMONEY DOUBLE,
+				NOTMONEY DOUBLE,
+				EXTEND_PROP1 VARCHAR(100),
+				EXTEND_PROP2 VARCHAR(100),
+				EXTEND_PROP3 VARCHAR(100),
+			    CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX DATE(DATE)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="page" parameterType="map" resultType="dryLineCarRecord" resultMap="dryLineCarRecordResultMap">
+            SELECT ID, DATE, COMPANY, BRAND, CARKIND, PRICE, CAPACITY, CARCARD, OILCARD, ETCCARD, AMORTIZE_AGE,
+               		ROUND(SALVAGE_VALUE, 2) AS SALVAGE_VALUE, ROUND(OLDMONEY, 2) AS OLDMONEY, 
+               		ROUND(ALLMONEY, 2) AS ALLMONEY, ROUND(NOTMONEY, 2) AS NOTMONEY FROM T_DRYLINE_CAR_RECORD WHERE 1=1
+			<if test="beginTime != null">
+				AND DATE &gt;= #{beginTime}
+			</if>
+	     	<if test="endTime != null">
+				AND DATE &lt;= #{endTime}
+			</if>
+			<if test="company != null">
+		    	AND COMPANY LIKE CONCAT('%',#{company},'%')
+		  	</if>
+            <if test="sortOrder != null">
+				ORDER BY ${sortOrder}
+			</if>
+			<if test="offset != null">
+				LIMIT #{offset},#{rows}
+	        </if>
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+            SELECT COUNT(1) FROM T_DRYLINE_CAR_RECORD WHERE 1=1
+            <if test="beginTime != null">
+				AND DATE &gt;= #{beginTime}
+			</if>
+	     	<if test="endTime != null">
+				AND DATE &lt;= #{endTime}
+			</if>
+			<if test="company != null">
+		    	AND COMPANY LIKE CONCAT('%',#{company},'%')
+		  	</if>
+	</select>
+
+	<insert id="insert" parameterType="DryLineCarRecord" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+		INSERT INTO T_DRYLINE_CAR_RECORD (
+	        	DATE, COMPANY, BRAND, CARKIND, PRICE, CAPACITY, CARCARD, OILCARD, ETCCARD, AMORTIZE_AGE,
+               		SALVAGE_VALUE, OLDMONEY, ALLMONEY, NOTMONEY, CREATOR_ID, CREATOR, CREATED_TIME
+		) VALUES 
+			(#{date}, #{company}, #{brand}, #{carKind}, #{price}, #{capacity}, #{carCard}, #{oilCard}, #{etcCard},
+				#{amortizeAge}, #{salvageValue}, #{oldMoney}, #{allMoney}, #{notMoney}, #{creatorId}, #{creator}, #{createdTime})
+	</insert>
+	
+	<delete id="deleteByIds" >
+		DELETE FROM T_DRYLINE_CAR_RECORD WHERE ID IN
+		<foreach item="item" index="index" collection="ids"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<update id="update" parameterType="map">
+		UPDATE T_DRYLINE_CAR_RECORD SET DATE = #{date}, COMPANY = #{company}, BRAND = #{brand}, 
+			CARKIND = #{carKind}, PRICE = #{price}, CAPACITY = #{capacity}, CARCARD = #{carCard}, 
+			OILCARD = #{oilCard}, ETCCARD = #{etcCard}, AMORTIZE_AGE = #{amortizeAge},
+            SALVAGE_VALUE = #{salvageValue}, OLDMONEY = #{oldMoney}, ALLMONEY = #{allMoney}, 
+            NOTMONEY = #{notMoney},
+            LAST_OPERATOR_ID = #{lastOperatorId,jdbcType=BIGINT},
+			LAST_OPERATOR = #{lastOperator,jdbcType=VARCHAR},
+			LAST_OPERATED_TIME = #{lastOperatedTime,jdbcType=TIMESTAMP} WHERE ID = #{id}
+	</update>
+	
+	<select id="selectById" parameterType="Long" resultType="dryLineCarRecord" resultMap="dryLineCarRecordResultMap">
+		SELECT ID, DATE, COMPANY, BRAND, CARKIND, PRICE, CAPACITY, CARCARD, OILCARD, ETCCARD, AMORTIZE_AGE
+			FROM T_DRYLINE_CAR_RECORD WHERE ID = #{id}
+	</select>
+
+	<select id="getCardMap" resultType="dryLineCarRecord" resultMap="dryLineCarRecordResultMap">
+            SELECT CARCARD, OILCARD FROM T_DRYLINE_CAR_RECORD WHERE 1=1
+	</select>
+	
+	<!-- 获取 车牌 -->
+	<select id="getAllPlateNumber" resultType="dryLineCarRecord" resultMap="dryLineCarRecordResultMap">
+            SELECT ID,CARCARD FROM T_DRYLINE_CAR_RECORD
+	</select>
+	<!-- 获取 油卡 -->
+	<select id="getAllOilNumber" resultType="dryLineCarRecord" resultMap="dryLineCarRecordResultMap">
+            SELECT ID,OILCARD FROM T_DRYLINE_CAR_RECORD
+	</select>
+	
+</mapper>

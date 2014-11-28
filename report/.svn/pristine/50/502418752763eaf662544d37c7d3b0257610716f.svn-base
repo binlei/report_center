@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.payment.IPayReportDataMapper">
+	<select id="page" parameterType="map" resultType="ExportReportData">
+        SELECT Y.SETTLENO
+			,Y.SETBOOK
+			,Y.PROJECT
+			,Y.SUPPLIER
+			,Y.PERIOD
+			,Y.UAMONEY
+			,Y.UAMONTH
+			,Y.UARETURNMONEY
+			,Y.UARETURNMONTH
+			,Y.ZMYTYE
+			,Y.INVOICEDATE
+			,Y.INVOICENO1
+			,Y.INVOICEMONEY1
+			,Y.INVOICENO2
+			,Y.INVOICEMONEY2
+			,Y.ADJUSTMONEY
+			,Y.ADJUSTDATE
+			,Y.BACKFUNDSMONEY
+			,Y.BACKFUNDSDATE
+			,Y.BACKFUNDSBANK
+			,Y.YSJE
+			,Y.WKPTS
+			,Y.WDZTS
+			,Y.DZTS
+			,Y.JTKPCY
+			,Y.INFORMATION
+			,Y.STATUS
+			,Y.RETUSTATUS
+			,Y.INVOSTATUS
+			,Y.BACKSTATUS
+			,Y.REMARK
+			,Y.TAX1, Y.TAX2, Y.TITLE
+		FROM 
+		(
+		    SELECT
+			 X.SETTLENO
+			,X.SETBOOK
+			,X.PROJECT
+			,X.SUPPLIER
+			,X.PERIOD
+			,X.UAMONEY
+			,X.UAMONTH
+			,X.UARETURNMONEY
+			,X.UARETURNMONTH
+			,X.ZMYTYE
+			,X.INVOICEDATE
+			,X.INVOICENO1
+			,X.INVOICEMONEY1
+			,X.INVOICENO2
+			,X.INVOICEMONEY2
+			,X.ADJUSTMONEY
+			,X.ADJUSTDATE
+			,X.BACKFUNDSMONEY
+			,X.BACKFUNDSDATE
+			,X.BACKFUNDSBANK
+			,X.YSJE
+			,X.WKPTS
+			,X.WDZTS
+			,X.DZTS
+			,X.JTKPCY
+			,X.INFORMATION
+			,CASE 
+				WHEN X.INFORMATION IS NOT NULL THEN '回款确认'
+					ELSE CASE WHEN IFNULL(X.BACKFUNDSMONEY, 0) > 0 THEN '已回款未确认' 
+						ELSE CASE WHEN IFNULL(X.INVOICEMONEY1, 0) + IFNULL(X.INVOICEMONEY2, 0) > 0 THEN '已开票未回款'
+							ELSE CASE WHEN IFNULL(X.UAMONEY, 0) > 0 THEN '已预提未开票'
+						END
+					END
+				END
+			 END STATUS
+			,X.RETUSTATUS
+			,X.INVOSTATUS
+			,X.BACKSTATUS
+			,X.REMARK
+			,X.TAX1, X.TAX2, X.TITLE
+		    FROM
+			(
+				SELECT DISTINCT
+		         A.SETTLE_NO SETTLENO
+		        ,A.SET_BOOK SETBOOK
+		        ,A.PROJECT PROJECT
+		        ,A.SUPPLIER SUPPLIER
+		        ,A.PERIOD PERIOD
+		        ,ROUND(IFNULL(A.UA_MONEY, 0), 2) UAMONEY
+		        ,A.UA_MONTH UAMONTH
+		        ,ROUND(IFNULL(B.UARETURN_MONEY, 0), 2) UARETURNMONEY
+				,B.UARETURN_MONTH UARETURNMONTH
+				,ROUND((IFNULL(A.UA_MONEY, 0) - IFNULL(B.UARETURN_MONEY, 0)), 2) ZMYTYE
+		        ,C.INVOICE_DATE INVOICEDATE
+				,C.INVOICE_NO1 INVOICENO1
+				,ROUND(IFNULL(C.INVOICE_MONEY1, 0), 2) INVOICEMONEY1
+				,C.INVOICE_NO2 INVOICENO2
+				,ROUND(IFNULL(C.INVOICE_MONEY2, 0), 2) INVOICEMONEY2
+				,ROUND(IFNULL(D.BACKFUNDS_MONEY, 0), 2) BACKFUNDSMONEY
+				,ROUND(IFNULL(D.ADJUST_MONEY, 0), 2) ADJUSTMONEY
+				,D.ADJUST_DATE ADJUSTDATE
+				,D.BACKFUNDS_DATE BACKFUNDSDATE
+				,D.BACKFUNDS_BANK BACKFUNDSBANK
+				,ROUND((IFNULL(C.INVOICE_MONEY1, 0) + IFNULL(C.INVOICE_MONEY2, 0) - IFNULL(D.BACKFUNDS_MONEY, 0) - IFNULL(D.ADJUST_MONEY, 0)), 2) YSJE
+				,DATEDIFF(SYSDATE(), A.UA_MONTH) WKPTS
+				,DATEDIFF(SYSDATE(), C.INVOICE_DATE) WDZTS
+				,DATEDIFF(SYSDATE(), D.BACKFUNDS_DATE) DZTS
+				,ROUND((IFNULL(C.INVOICE_MONEY1, 0) + IFNULL(C.INVOICE_MONEY2, 0) - IFNULL(A.UA_MONEY, 0)), 2) JTKPCY
+				,D.INFORMATION
+		        ,'未知' STATUS
+				,B.EXTEND_PROP1 RETUSTATUS
+				,C.EXTEND_PROP1 INVOSTATUS
+				,D.EXTEND_PROP1 BACKSTATUS
+				,A.REMARK
+				,C.TAX1, C.TAX2, C.TITLE
+		       	FROM
+				T_WITHHOLDING_DATA A
+				LEFT JOIN T_WITHHOLDING_RETURN_DATA B ON A.SETTLE_NO = B.SETTLE_NO
+				LEFT JOIN T_INVOICE_DATA C ON A.SETTLE_NO = C.SETTLE_NO
+				LEFT JOIN T_BACKFUNDS_DATA D ON A.SETTLE_NO = D.SETTLE_NO
+		       	WHERE 1 = 1
+		       	<if test="settleNo != null">
+       				AND A.SETTLE_NO LIKE CONCAT('%',#{settleNo},'%' )
+       			</if>
+		       	<if test="setBook != null">
+       				AND A.SET_BOOK LIKE CONCAT('%',#{setBook},'%' )
+       			</if>
+		       	<if test="project != null">
+       				AND A.PROJECT LIKE CONCAT('%',#{project},'%' )
+       			</if>
+		       	<if test="supplier != null">
+       				AND A.SUPPLIER LIKE CONCAT('%',#{supplier},'%' )
+       			</if>
+       			<if test="beginKprq != null">
+       				AND C.INVOICE_DATE &gt;= #{beginKprq}
+       			</if>
+       			<if test="endKprq != null">
+					AND C.INVOICE_DATE &lt;= #{endKprq}
+				</if>
+       			<if test="beginSsqj != null">
+       				AND A.PERIOD &gt;= #{beginSsqj}
+       			</if>
+       			<if test="endSsqj != null">
+					AND A.PERIOD &lt;= #{endSsqj}
+				</if>
+				<if test="je != null">
+					AND (A.UA_MONEY = #{je} OR C.INVOICE_MONEY1 = #{je} OR C.INVOICE_MONEY2 = #{je} OR D.BACKFUNDS_MONEY = #{je})
+				</if>
+				<if test="beginhkrq != null">
+					AND D.BACKFUNDS_DATE &gt;= #{beginhkrq}
+				</if>
+				<if test="endhkrq != null">
+					AND D.BACKFUNDS_DATE &lt;= #{endhkrq}
+				</if>
+				<if test="qjrq != null">
+					AND A.UA_MONTH &lt;= #{qjrq} AND B.UARETURN_MONTH &lt;= #{qjrq}
+					AND C.INVOICE_DATE &lt;= #{qjrq} AND D.BACKFUNDS_DATE &lt;= #{qjrq}
+				</if>
+			) X
+		) Y
+		WHERE 1=1
+		<if test="status != null">
+	    	AND Y.STATUS = #{status}
+	  	</if>
+	  	<if test="sortOrder != null and sortOrder != 'id desc'">
+	    	ORDER BY ${sortOrder}
+	  	</if>
+        <if test="offset != null">
+         LIMIT 
+         #{offset}, 
+        </if>
+        <if test="rows != null">
+         #{rows}
+        </if>
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+        SELECT COUNT(Z.SETTLENO) FROM (
+			SELECT Y.SETTLENO FROM 
+			(
+			    SELECT
+				 X.SETTLENO
+				,CASE 
+					WHEN X.INFORMATION IS NOT NULL THEN '回款确认'
+						ELSE CASE WHEN IFNULL(X.BACKFUNDSMONEY, 0) > 0 THEN '已回款未确认' 
+							ELSE CASE WHEN IFNULL(X.INVOICEMONEY1, 0) + IFNULL(X.INVOICEMONEY2, 0) > 0 THEN '已开票未回款'
+								ELSE CASE WHEN IFNULL(X.UAMONEY, 0) > 0 THEN '已预提未开票'
+							END
+						END
+					END
+			 	END STATUS
+			    FROM
+				(
+					SELECT DISTINCT
+			         A.SETTLE_NO SETTLENO
+			        ,A.SET_BOOK SETBOOK
+			        ,A.PROJECT PROJECT
+			        ,A.SUPPLIER SUPPLIER
+			        ,A.PERIOD PERIOD
+			        ,A.UA_MONEY UAMONEY
+			        ,C.INVOICE_DATE INVOICEDATE
+					,C.INVOICE_MONEY1 INVOICEMONEY1
+					,C.INVOICE_MONEY2 INVOICEMONEY2
+					,D.BACKFUNDS_MONEY BACKFUNDSMONEY
+					,D.INFORMATION
+			        ,'未知' STATUS
+			       	FROM
+					T_WITHHOLDING_DATA A
+					LEFT JOIN T_WITHHOLDING_RETURN_DATA B ON A.SETTLE_NO = B.SETTLE_NO
+					LEFT JOIN T_INVOICE_DATA C ON A.SETTLE_NO = C.SETTLE_NO
+					LEFT JOIN T_BACKFUNDS_DATA D ON A.SETTLE_NO = D.SETTLE_NO
+			       	WHERE 1 = 1 
+			       	<if test="settleNo != null">
+	       				AND A.SETTLE_NO LIKE CONCAT('%',#{settleNo},'%' )
+	       			</if>
+			       	<if test="setBook != null">
+	       				AND A.SET_BOOK LIKE CONCAT('%',#{setBook},'%' )
+	       			</if>
+			       	<if test="project != null">
+	       				AND A.PROJECT LIKE CONCAT('%',#{project},'%' )
+	       			</if>
+			       	<if test="supplier != null">
+	       				AND A.SUPPLIER LIKE CONCAT('%',#{supplier},'%' )
+	       			</if>
+	       			<if test="beginKprq != null">
+	       				AND C.INVOICE_DATE &gt;= #{beginKprq}
+	       			</if>
+	       			<if test="endKprq != null">
+						AND C.INVOICE_DATE &lt;= #{endKprq}
+					</if>
+	       			<if test="beginSsqj != null">
+	       				AND A.PERIOD &gt;= #{beginSsqj}
+	       			</if>
+	       			<if test="endSsqj != null">
+						AND A.PERIOD &lt;= #{endSsqj}
+					</if>
+					<if test="je != null">
+						AND (A.UA_MONEY = #{je} OR C.INVOICE_MONEY1 = #{je} OR C.INVOICE_MONEY2 = #{je} OR D.BACKFUNDS_MONEY = #{je})
+					</if>
+					<if test="beginhkrq != null">
+						AND D.BACKFUNDS_DATE &gt;= #{beginhkrq}
+					</if>
+					<if test="endhkrq != null">
+						AND D.BACKFUNDS_DATE &lt;= #{endhkrq}
+					</if>
+					<if test="qjrq != null">
+						AND A.UA_MONTH &lt;= #{qjrq} AND B.UARETURN_MONTH &lt;= #{qjrq}
+						AND C.INVOICE_DATE &lt;= #{qjrq} AND D.BACKFUNDS_DATE &lt;= #{qjrq}
+					</if>
+				) X
+			) Y
+			WHERE 1=1
+			<if test="status != null">
+		    	AND Y.STATUS = #{status}
+		  	</if>
+		) Z
+	</select>
+</mapper>

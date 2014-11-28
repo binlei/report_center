@@ -1,0 +1,40 @@
+*{padding: 0; margin: 0;}
+	#ProgressBar_BG 
+	{
+		position: fixed;
+		z-index:100000000;
+		top: 0px;
+		left: 0px;
+		height:100%;
+		width:100%;
+		background-color:#000;
+		filter:alpha(opacity=75);
+		-moz-opacity: 0.75;
+		opacity: 0.75;
+		background-color:#000;
+		filter:alpha(opacity=75);
+		-moz-opacity: 0.75;
+		opacity: 0.75;
+	}
+ 
+* html #ProgressBar_BG { /* ie6 hack */
+	     position: absolute;
+	     height: expression(document.body.scrollheight > document.body.offsetheight ? document.body.scrollheight : document.body.offsetheight + 'px');
+	}
+	
+	#ProgressBar_Load
+	{
+		position: fixed;
+		height:13px;
+		width:206px;
+		z-index:100000000;
+		top: 50%;
+		left: 50%;
+		margin: -6px 0 0 -104px; /* -height/2 0 0 -width/2 */
+	}
+	
+	* html #ProgressBar_Load 
+	{ /* ie6 hack */
+	position: absolute;
+	margin-top: expression(0 - parseint(this.offsetheight / 2) + (tbwindowmargin = document.documentelement && document.documentelement.scrolltop || document.body.scrolltop) + 'px');
+	}

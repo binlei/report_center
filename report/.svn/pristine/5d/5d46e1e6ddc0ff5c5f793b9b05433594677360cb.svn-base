@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.payment.IWithholdingDataMapper">
+	<resultMap type="WithholdingData" id="withholdingDataResultMap">
+		<id property="id" column="ID" />
+		<result property="settleNo" column="SETTLE_NO" />
+		<result property="setBook" column="SET_BOOK" />
+		<result property="project" column="PROJECT" />
+		<result property="supplier" column="SUPPLIER" />
+		<result property="period" column="PERIOD" />
+		<result property="uaMoney" column="UA_MONEY" />
+		<result property="uaMonth" column="UA_MONTH" />
+		<result property="remark" column="REMARK" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+		<result property="creatorId" column="CREATOR_ID" />
+		<result property="creator" column="CREATOR" />
+		<result property="createdTime" column="CREATED_TIME" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_WITHHOLDING_DATA;
+			CREATE TABLE T_WITHHOLDING_DATA
+			(
+				ID INT(40) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				SETTLE_NO VARCHAR(40) NOT NULL,
+				SET_BOOK VARCHAR(100),
+				PROJECT VARCHAR(100),
+				SUPPLIER VARCHAR(100),
+				PERIOD DATE,
+				UA_MONEY DOUBLE,
+				UA_MONTH DATE,
+				EXTEND_PROP1 VARCHAR(200),
+			  	EXTEND_PROP2 VARCHAR(200),
+			  	CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX SETTLE_NO_INDEX(SETTLE_NO)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="page" parameterType="map" resultType="WithholdingData" resultMap="withholdingDataResultMap">
+		SELECT ID, SETTLE_NO, SET_BOOK, PROJECT, SUPPLIER, PERIOD, ROUND(UA_MONEY, 2) UA_MONEY, UA_MONTH FROM T_WITHHOLDING_DATA WHERE 1=1
+		<if test="settleNo != null">
+   			AND SETTLE_NO LIKE CONCAT('%',#{settleNo},'%' )
+ 		</if>
+ 		<if test="sortOrder != null">
+	    	ORDER BY ${sortOrder}
+	  	</if>
+        LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+         SELECT count(ID) FROM T_WITHHOLDING_DATA WHERE 1=1
+		<if test="settleNo != null">
+			AND SETTLE_NO LIKE CONCAT('%',#{settleNo},'%' )
+		</if>
+	</select>
+	
+	<select id="getAllSettleNo" resultType="String" >
+         SELECT SETTLE_NO FROM T_WITHHOLDING_DATA GROUP BY SETTLE_NO HAVING COUNT(*) > 1
+	</select>
+	
+	<select id="dataDelete" parameterType="String" >
+         DELETE FROM T_WITHHOLDING_DATA WHERE ID = #{id}
+	</select>
+	
+	<insert id="save" parameterType="java.util.List">
+		INSERT INTO T_WITHHOLDING_DATA (
+	        SETTLE_NO,
+			SET_BOOK,
+			PROJECT,
+			SUPPLIER,
+			PERIOD,
+			UA_MONEY,
+			UA_MONTH,
+			EXTEND_PROP1,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES 
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.settleNo},#{item.setBook},#{item.project},#{item.supplier},#{item.period},
+			 #{item.uaMoney},#{item.uaMonth},#{item.extendProp1},#{item.creatorId},#{item.creator},#{item.createdTime})
+		</foreach>
+	</insert>
+	
+	<delete id="deleteMore">
+		DELETE FROM T_WITHHOLDING_DATA WHERE SETTLE_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<delete id="delete">
+		DELETE FROM T_WITHHOLDING_DATA WHERE EXTEND_PROP1 = 0 AND SETTLE_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<update id="setToOne" parameterType="Long">
+		UPDATE T_WITHHOLDING_DATA SET EXTEND_PROP1 = 1 WHERE EXTEND_PROP1 = 0
+	</update>
+	
+	<select id="getRemark" parameterType="String" resultType="String">
+		SELECT REMARK FROM T_WITHHOLDING_DATA WHERE SETTLE_NO = #{settleNo}
+	</select>
+	
+	<update id="saveRemarkInfo" parameterType="map">
+		UPDATE T_WITHHOLDING_DATA SET REMARK = #{remark} WHERE SETTLE_NO = #{settleNo}
+	</update>
+	
+	<select id="getInfoBySettleNo" parameterType="String" resultType="WithholdingData" resultMap="withholdingDataResultMap">
+		SELECT SETTLE_NO, SET_BOOK, PROJECT, SUPPLIER, PERIOD, UA_MONEY, UA_MONTH 
+			FROM T_WITHHOLDING_DATA WHERE SETTLE_NO = #{settleNo}
+	</select>
+	
+	<update id="updataWithInfo" parameterType="map">
+		UPDATE T_WITHHOLDING_DATA SET SET_BOOK = #{setBook}, PROJECT = #{project}, SUPPLIER = #{supplier},
+			PERIOD = #{period}, UA_MONEY = #{uaMoney}, UA_MONTH = #{uaMonth} WHERE SETTLE_NO = #{settleNo}
+	</update>
+</mapper>

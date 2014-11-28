@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jshuabo.reportcenter.server.dao.finance.IFinanceSupplierMapper">
+	
+	<resultMap id="financeSupplierResultMap" type="FinanceSupplier">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="CODE" property="code" jdbcType="VARCHAR" />
+	    <result column="NAME" property="name" jdbcType="VARCHAR" />
+	    <result column="STATUS" property="status" jdbcType="VARCHAR" />
+	    <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+		<result column="EXTEND_PROP1" property="extendProp1" jdbcType="VARCHAR" />
+		<result column="EXTEND_PROP2" property="extendProp2" jdbcType="BIGINT" />
+		<result column="EXTEND_PROP3" property="extendProp3" jdbcType="TIMESTAMP" />
+
+		<result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+		<result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+		<result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+		<result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+		<result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+		<result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+	
+		<collection property="financeServiceCostList" column="ID" ofType="FinanceServiceCost" 
+			select="com.jshuabo.reportcenter.server.dao.finance.IFinanceServiceCostMapper.getServiceCosts">
+			<id column="ID" property="id" jdbcType="BIGINT" />
+			<result column="MODEL" property="model" jdbcType="VARCHAR" />
+			<result column="CATEGORY" property="category" jdbcType="VARCHAR" />
+			<result column="QUANTITY" property="quantity" jdbcType="INTEGER" />
+			<result column="SERVICE_CHARGE" property="serviceCharge" jdbcType="DOUBLE" />
+			<result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+		</collection>
+			
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		ID, CODE, NAME, STATUS, DESCRIPTION, EXTEND_PROP1, EXTEND_PROP2, EXTEND_PROP3, CREATOR_ID, 
+    	CREATOR, CREATED_TIME, LAST_OPERATOR_ID, LAST_OPERATOR, LAST_OPERATED_TIME
+	</sql>
+	
+	<select id="page" parameterType="Map" resultMap="financeSupplierResultMap">
+		select <include refid="Base_Column_List"/> from t_finance_supplier
+	</select>
+	
+	<select id="total" parameterType="Map" resultType="java.lang.Long">
+		select count(*) from t_finance_supplier
+	</select>
+
+	<select id="selectById" resultMap="financeSupplierResultMap" parameterType="java.lang.Long">
+		select * from t_finance_supplier where ID = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<select id="loadAll" resultMap="financeSupplierResultMap" >
+		select ID,NAME from t_finance_supplier
+	</select>
+	
+	<select id="checkSuppliser" resultType="Integer" parameterType="Map">
+		select ID from t_finance_supplier where NAME = #{name}
+	</select>
+	
+	<delete id="deleteByIds" parameterType="java.lang.Long">
+		DELETE FROM t_finance_supplier WHERE ID IN
+		<foreach item="item" index="index" collection="ids"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+
+	<insert id="insert" parameterType="Map">
+		insert into t_finance_supplier
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="code != null" >
+			  CODE,
+			</if>
+			<if test="name != null" >
+			  NAME,
+			</if>
+			<if test="status != null" >
+			  STATUS,
+			</if>
+			<if test="description != null" >
+			  DESCRIPTION,
+			</if>
+			<if test="extendProp1 != null">
+				EXTEND_PROP1,
+			</if>
+			<if test="extendProp2 != null">
+				EXTEND_PROP2,
+			</if>
+			<if test="extendProp3 != null">
+				EXTEND_PROP3,
+			</if>
+			<if test="creatorId != null">
+				CREATOR_ID,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createdTime != null">
+				CREATED_TIME
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="code != null" >
+			  #{code,jdbcType=VARCHAR},
+			</if>
+			<if test="name != null" >
+			  #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="status != null" >
+			  #{status,jdbcType=VARCHAR},
+			</if>
+			<if test="description != null" >
+			  #{description,jdbcType=VARCHAR},
+			</if>
+			<if test="extendProp1 != null">
+				#{extendProp1,jdbcType=VARCHAR},
+			</if>
+			<if test="extendProp2 != null">
+				#{extendProp2,jdbcType=BIGINT},
+			</if>
+			<if test="extendProp3 != null">
+				#{extendProp3,jdbcType=TIMESTAMP},
+			</if>
+			<if test="creatorId != null">
+				#{creatorId,jdbcType=BIGINT},
+			</if>
+			<if test="creator != null">
+				#{creator,jdbcType=VARCHAR},
+			</if>
+			<if test="createdTime != null">
+				#{createdTime,jdbcType=TIMESTAMP}
+			</if>
+		</trim>
+	</insert>
+
+	<update id="update" parameterType="Map">
+		update t_finance_supplier
+		<set>
+			<if test="code != null" >
+			  CODE = #{code,jdbcType=VARCHAR},
+			</if>
+			<if test="name != null" >
+			  NAME = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="status != null" >
+			  STATUS = #{status,jdbcType=VARCHAR},
+			</if>
+			<if test="description != null" >
+			  DESCRIPTION = #{description,jdbcType=VARCHAR},
+			</if>
+			<if test="extendProp1 != null">
+				EXTEND_PROP1 = #{extendProp1,jdbcType=VARCHAR},
+			</if>
+			<if test="extendProp2 != null">
+				EXTEND_PROP2 = #{extendProp2,jdbcType=BIGINT},
+			</if>
+			<if test="extendProp3 != null">
+				EXTEND_PROP3 = #{extendProp3,jdbcType=TIMESTAMP},
+			</if>
+			<if test="lastOperatorId != null">
+				LAST_OPERATOR_ID = #{lastOperatorId,jdbcType=BIGINT},
+			</if>
+			<if test="lastOperator != null">
+				LAST_OPERATOR = #{lastOperator,jdbcType=VARCHAR},
+			</if>
+			<if test="lastOperatedTime != null">
+				LAST_OPERATED_TIME = #{lastOperatedTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+</mapper>

@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.jshuabo.reportcenter.server.dao.automobile.IBranchLineDrawoutRecordMapper">
+	<resultMap type="BranchLineDrawoutRecord" id="drawoutRecordDataResultMap">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="DATE" property="date" jdbcType="DATE" />
+		<result column="LICENSE_NO" property="licenseNo" jdbcType="VARCHAR" />
+		<result column="DRIVER" property="driver" jdbcType="VARCHAR" />
+		<result column="LINE" property="line" jdbcType="VARCHAR" />
+		<result column="GPS_NO" property="gpsNo" jdbcType="VARCHAR" />
+		<result column="START_TIME" property="startTime" jdbcType="VARCHAR" />
+		<result column="START_MILEAGE" property="startMileage" jdbcType="DOUBLE" />
+		<result column="STOP_TIME" property="stopTime" jdbcType="VARCHAR" />
+		<result column="STOP_MILEAGE" property="stopMileage" jdbcType="DOUBLE" />
+		<result column="MILEAGE" property="mileage" jdbcType="DOUBLE" />
+		<result column="TICKET_QUANTITY" property="ticketQuantity" jdbcType="DOUBLE" />
+		<result column="HALL_QUANTITY" property="hallQuantity" jdbcType="DOUBLE" />
+		<result column="PCS_QUANTITY" property="pcsQuantity" jdbcType="DOUBLE" />
+		<result column="FUEL_PRICE" property="fuelPrice" jdbcType="DOUBLE" />
+		<result column="FUEL_COSTS" property="fuelCosts" jdbcType="DOUBLE" />
+		<result column="DAY" property="day" jdbcType="DOUBLE" />
+		<result column="RENTAL_FEE" property="rentalFee" jdbcType="DOUBLE" />
+		<result column="PARKING_FEE" property="parkingFee" jdbcType="DOUBLE" />
+		<result column="AWARD" property="award" jdbcType="DOUBLE" />
+		<result column="REMARKS" property="remarks" jdbcType="VARCHAR" />
+		<result column="IS_REIM" property="isReim" jdbcType="VARCHAR" />
+		<result column="CLEAN" property="clean" jdbcType="VARCHAR" />
+		<result column="PIE_QUANTITY" property="pieQuantity" jdbcType="DOUBLE" />
+		<result column="NO_DELIVERY" property="noDelivery" jdbcType="DOUBLE" />
+		<result column="REFUSAL" property="refusal" jdbcType="DOUBLE" />
+		<result column="VOTE_SIGN" property="voteSign" jdbcType="DOUBLE" />
+		<result column="EXTEND_PROP1" property="extendProp1" jdbcType="VARCHAR" />
+		<result column="EXTEND_PROP2" property="extendProp2" jdbcType="VARCHAR" /><!-- 推广厅数 -->
+		<result column="EXTEND_PROP3" property="extendProp3" jdbcType="VARCHAR" />
+		
+		<result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+		<result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+		<result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+		<result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+		<result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+		<result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+		
+		<association property="subStation" javaType="Organization" column="SUB_STATION" select="com.jshuabo.frame.server.dao.organization.IOrganizationMapper.load">
+			<id property="id" column="ID" />
+			<result property="code" column="CODE" />
+			<result property="name" column="NAME" />
+		</association>
+	</resultMap>
+	
+	  <sql id="Base_Column_List" >
+	    ID, SUB_STATION, DATE, LICENSE_NO, DRIVER, LINE, GPS_NO, START_TIME, START_MILEAGE, 
+	    STOP_TIME, STOP_MILEAGE, MILEAGE, TICKET_QUANTITY, HALL_QUANTITY, PCS_QUANTITY, FUEL_PRICE, 
+	    FUEL_COSTS, DAY, RENTAL_FEE, PARKING_FEE, AWARD, REMARKS, IS_REIM, CLEAN, PIE_QUANTITY, 
+	    NO_DELIVERY, REFUSAL, VOTE_SIGN, EXTEND_PROP1, EXTEND_PROP2, EXTEND_PROP3, CREATOR_ID, 
+	    CREATOR, CREATED_TIME, LAST_OPERATOR_ID, LAST_OPERATOR, LAST_OPERATED_TIME
+	  </sql>
+	  
+	  <select id="load" parameterType="Long" resultMap="drawoutRecordDataResultMap">
+	  		SELECT <include refid="Base_Column_List"/> FROM t_branchline_drawout_record WHERE id = #{id,jdbcType=BIGINT}
+	  </select>
+	  
+	<select id="page" parameterType="Map" resultType="BranchLineDrawoutRecord" resultMap="drawoutRecordDataResultMap">
+		SELECT  <include refid="Base_Column_List"/> 
+			FROM t_branchline_drawout_record WHERE 1=1
+					<if test="subStation != null and subStation != 1 and subStation != 15 and subStation != 16 and subStation != 17 and subStation != 38 and subStation != 50 and subStation != 53">
+						AND SUB_STATION = #{subStation}
+					</if>
+					<if test="name != null">
+						AND NAME LIKE CONCAT('%',#{name},'%')
+					</if>
+					<if test="driver != null">
+						AND DRIVER LIKE CONCAT('%',#{driver},'%')
+					</if>
+					<if test="beginTime != null">
+						AND DATE &gt;= #{beginTime}
+					</if>
+					<if test="endTime != null">
+						AND DATE &lt;= #{endTime}
+					</if>
+					<if test="sortOrder != null">
+						ORDER BY ${sortOrder}
+					</if>
+					<if test="offset != null">
+						LIMIT #{offset},
+					</if>
+					<if test="rows != null">
+						#{rows}
+					</if>
+	</select>
+
+	<select id="total" parameterType="Map" resultType="Long">
+		SELECT COUNT(1) FROM t_branchline_drawout_record WHERE 1=1
+			<if test="subStation != null and subStation != 1 and subStation != 15 and subStation != 16 and subStation != 17 and subStation != 38 and subStation != 50 and subStation != 53">
+				AND SUB_STATION = #{subStation}
+			</if>
+			<if test="nj == 33">
+				AND SUB_STATION = #{nj}
+			</if>
+			<if test="name != null">
+				AND NAME LIKE CONCAT('%',#{name},'%')
+			</if>
+			<if test="driver != null">
+				AND DRIVER LIKE CONCAT('%',#{driver},'%')
+			</if>
+			<if test="beginTime != null">
+				AND DATE &gt;= #{beginTime}
+			</if>
+			<if test="endTime != null">
+				AND DATE &lt;= #{endTime}
+			</if>
+	</select>
+
+	<delete id="deleteByIds" parameterType="String">
+		DELETE FROM t_branchline_drawout_record WHERE ID IN
+		<foreach item="item" index="index" collection="list" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<update id="validaty" parameterType="String">
+		UPDATE t_branchline_drawout_record SET EXTEND_PROP1 = '已确认' WHERE ID IN
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+	<select id="exprotPageData" parameterType="Map" resultType="Map">
+		select MAX(ID) 'MAX',MIN(ID) 'MIN',COUNT(ID) 'COUNT' from
+			t_branchline_drawout_record WHERE 1=1
+			<if test="subStation != null and subStation != 1 and subStation != 16 and subStation != 53">
+				AND SUB_STATION = #{subStation}
+			</if>
+			<if test="driver != null">
+				AND DRIVER LIKE CONCAT('%',#{driver},'%')
+			</if>
+			<if test="beginTime != null">
+				AND DATE &gt;= #{beginTime}
+			</if>
+			<if test="endTime != null">
+				AND DATE &lt;= #{endTime}
+			</if>
+			<if test="sortOrder != null">
+				ORDER BY ${sortOrder}
+			</if>
+			<if test="offset != null">
+				LIMIT #{offset}, #{rows}
+			</if>
+	</select>
+	
+	<select id="exprot2Excel" parameterType="Map" resultMap="drawoutRecordDataResultMap">
+	SELECT  
+			t.ID, t.SUB_STATION,
+			o.name as EXTEND_PROP3, 
+			t.DATE, 
+			t.LICENSE_NO, 
+			t.DRIVER, 
+			t.LINE, 
+			t.GPS_NO, 
+			t.START_TIME, 
+			t.START_MILEAGE, 
+		    t.STOP_TIME, 
+		    t.STOP_MILEAGE, 
+		    t.MILEAGE, 
+		    t.TICKET_QUANTITY, 
+		    t.HALL_QUANTITY, 
+		    t.PCS_QUANTITY, 
+		    t.FUEL_PRICE, 
+		    t.FUEL_COSTS, 
+		    t.DAY, 
+		    t.RENTAL_FEE, 
+		    t.PARKING_FEE, 
+		    t.AWARD, 
+		    t.REMARKS, 
+		    t.IS_REIM,
+			t.CLEAN, PIE_QUANTITY, 
+		    t.NO_DELIVERY, 
+		    t.REFUSAL, 
+		    t.VOTE_SIGN, 
+		    t.EXTEND_PROP1, 
+		    t.EXTEND_PROP2
+		FROM t_branchline_drawout_record t,m_organization o WHERE t.SUB_STATION = o.ID
+	<if test="subStation != null and subStation != 1 and subStation != 15 and subStation != 16 and subStation != 17 and subStation != 38 and subStation != 50 and subStation != 53">
+		AND SUB_STATION = #{subStation}
+	</if>
+	<if test="name != null">
+		AND NAME LIKE CONCAT('%',#{name},'%')
+	</if>
+	<if test="driver != null">
+		AND DRIVER LIKE CONCAT('%',#{driver},'%')
+	</if>
+	<if test="beginTime != null">
+		AND DATE &gt;= #{beginTime}
+	</if>
+	<if test="endTime != null">
+		AND DATE &lt;= #{endTime}
+	</if>
+	<if test="sortOrder != null">
+		ORDER BY ${sortOrder}
+	</if>
+	<if test="offset != null">
+		LIMIT #{offset},
+	</if>
+	<if test="rows != null">
+		#{rows}
+	</if>
+	</select>
+
+	<insert id="insert" parameterType="Map">
+		insert into t_branchline_drawout_record
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="subStation != null">
+				SUB_STATION,
+			</if>
+			<if test="date != null">
+				DATE,
+			</if>
+			<if test="licenseNo != null">
+				LICENSE_NO,
+			</if>
+			<if test="driver != null">
+				DRIVER,
+			</if>
+			<if test="line != null">
+				LINE,
+			</if>
+			<if test="gpsNo != null">
+				GPS_NO,
+			</if>
+			<if test="startTime != null">
+				START_TIME,
+			</if>
+			<if test="startMileage != null">
+				START_MILEAGE,
+			</if>
+			<if test="stopTime != null">
+				STOP_TIME,
+			</if>
+			<if test="stopMileage != null">
+				STOP_MILEAGE,
+			</if>
+			<if test="mileage != null">
+				MILEAGE,
+			</if>
+			<if test="ticketQuantity != null">
+				TICKET_QUANTITY,
+			</if>
+			<if test="hallQuantity != null">
+				HALL_QUANTITY,
+			</if>
+			<if test="pcsQuantity != null">
+				PCS_QUANTITY,
+			</if>
+			<if test="fuelPrice != null">
+				FUEL_PRICE,
+			</if>
+			<if test="fuelCosts != null">
+				FUEL_COSTS,
+			</if>
+			<if test="day != null">
+				DAY,
+			</if>
+			<if test="rentalFee != null">
+				RENTAL_FEE,
+			</if>
+			<if test="parkingFee != null">
+				PARKING_FEE,
+			</if>
+			<if test="award != null">
+				AWARD,
+			</if>
+			<if test="remarks != null">
+				REMARKS,
+			</if>
+			<if test="isReim != null">
+				IS_REIM,
+			</if>
+			<if test="clean != null">
+				CLEAN,
+			</if>
+			<if test="pieQuantity != null">
+				PIE_QUANTITY,
+			</if>
+			<if test="noDelivery != null">
+				NO_DELIVERY,
+			</if>
+			<if test="refusal != null">
+				REFUSAL,
+			</if>
+			<if test="voteSign != null">
+				VOTE_SIGN,
+			</if>
+			<if test="extendProp1 != null">
+				EXTEND_PROP1,
+			</if>
+			<if test="extendProp2 != null">
+				EXTEND_PROP2,
+			</if>
+			<if test="extendProp3 != null">
+				EXTEND_PROP3,
+			</if>
+			<if test="creatorId != null">
+				CREATOR_ID,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createdTime != null">
+				CREATED_TIME
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="subStation != null">
+				#{subStation,jdbcType=BIGINT},
+			</if>
+			<if test="date != null">
+				#{date,jdbcType=DATE},
+			</if>
+			<if test="licenseNo != null">
+				#{licenseNo,jdbcType=VARCHAR},
+			</if>
+			<if test="driver != null">
+				#{driver,jdbcType=VARCHAR},
+			</if>
+			<if test="line != null">
+				#{line,jdbcType=VARCHAR},
+			</if>
+			<if test="gpsNo != null">
+				#{gpsNo,jdbcType=VARCHAR},
+			</if>
+			<if test="startTime != null">
+				#{startTime,jdbcType=VARCHAR},
+			</if>
+			<if test="startMileage != null">
+				#{startMileage,jdbcType=DOUBLE},
+			</if>
+			<if test="stopTime != null">
+				#{stopTime,jdbcType=VARCHAR},
+			</if>
+			<if test="stopMileage != null">
+				#{stopMileage,jdbcType=DOUBLE},
+			</if>
+			<if test="mileage != null">
+				#{mileage,jdbcType=DOUBLE},
+			</if>
+			<if test="ticketQuantity != null">
+				#{ticketQuantity,jdbcType=DOUBLE},
+			</if>
+			<if test="hallQuantity != null">
+				#{hallQuantity,jdbcType=DOUBLE},
+			</if>
+			<if test="pcsQuantity != null">
+				#{pcsQuantity,jdbcType=DOUBLE},
+			</if>
+			<if test="fuelPrice != null">
+				#{fuelPrice,jdbcType=DOUBLE},
+			</if>
+			<if test="fuelCosts != null">
+				#{fuelCosts,jdbcType=DOUBLE},
+			</if>
+			<if test="day != null">
+				#{day,jdbcType=DOUBLE},
+			</if>
+			<if test="rentalFee != null">
+				#{rentalFee,jdbcType=DOUBLE},
+			</if>
+			<if test="parkingFee != null">
+				#{parkingFee,jdbcType=DOUBLE},
+			</if>
+			<if test="award != null">
+				#{award,jdbcType=DOUBLE},
+			</if>
+			<if test="remarks != null">
+				#{remarks,jdbcType=VARCHAR},
+			</if>
+			<if test="isReim != null">
+				#{isReim,jdbcType=VARCHAR},
+			</if>
+			<if test="clean != null">
+				#{clean,jdbcType=VARCHAR},
+			</if>
+			<if test="pieQuantity != null">
+				#{pieQuantity,jdbcType=DOUBLE},
+			</if>
+			<if test="noDelivery != null">
+				#{noDelivery,jdbcType=DOUBLE},
+			</if>
+			<if test="refusal != null">
+				#{refusal,jdbcType=DOUBLE},
+			</if>
+			<if test="voteSign != null">
+				#{voteSign,jdbcType=DOUBLE},
+			</if>
+			<if test="extendProp1 != null">
+				#{extendProp1,jdbcType=VARCHAR},
+			</if>
+			<if test="extendProp2 != null">
+				#{extendProp2,jdbcType=VARCHAR},
+			</if>
+			<if test="extendProp3 != null">
+				#{extendProp3,jdbcType=VARCHAR},
+			</if>
+			<if test="creatorId != null">
+				#{creatorId,jdbcType=BIGINT},
+			</if>
+			<if test="creator != null">
+				#{creator,jdbcType=VARCHAR},
+			</if>
+			<if test="createdTime != null">
+				#{createdTime,jdbcType=TIMESTAMP}
+			</if>
+		</trim>
+	</insert>
+	
+	<update id="update" parameterType="Map" >
+		   update t_branchline_drawout_record
+		    set SUB_STATION = #{subStation,jdbcType=BIGINT},
+		      DATE = #{date,jdbcType=DATE},
+		      LICENSE_NO = #{licenseNo,jdbcType=VARCHAR},
+		      DRIVER = #{driver,jdbcType=VARCHAR},
+		      LINE = #{line,jdbcType=VARCHAR},
+		      GPS_NO = #{gpsNo,jdbcType=VARCHAR},
+		      START_TIME = #{startTime,jdbcType=VARCHAR},
+		      START_MILEAGE = #{startMileage,jdbcType=DOUBLE},
+		      STOP_TIME = #{stopTime,jdbcType=VARCHAR},
+		      STOP_MILEAGE = #{stopMileage,jdbcType=DOUBLE},
+		      MILEAGE = #{mileage,jdbcType=DOUBLE},
+		      TICKET_QUANTITY = #{ticketQuantity,jdbcType=DOUBLE},
+		      HALL_QUANTITY = #{hallQuantity,jdbcType=DOUBLE},
+		      PCS_QUANTITY = #{pcsQuantity,jdbcType=DOUBLE},
+		      FUEL_PRICE = #{fuelPrice,jdbcType=DOUBLE},
+		      FUEL_COSTS = #{fuelCosts,jdbcType=DOUBLE},
+		      DAY = #{day,jdbcType=DOUBLE},
+		      RENTAL_FEE = #{rentalFee,jdbcType=DOUBLE},
+		      PARKING_FEE = #{parkingFee,jdbcType=DOUBLE},
+		      AWARD = #{award,jdbcType=DOUBLE},
+		      REMARKS = #{remarks,jdbcType=VARCHAR},
+		      IS_REIM = #{isReim,jdbcType=VARCHAR},
+		      CLEAN = #{clean,jdbcType=VARCHAR},
+		      PIE_QUANTITY = #{pieQuantity,jdbcType=DOUBLE},
+		      NO_DELIVERY = #{noDelivery,jdbcType=DOUBLE},
+		      REFUSAL = #{refusal,jdbcType=DOUBLE},
+		      VOTE_SIGN = #{voteSign,jdbcType=DOUBLE},
+		      EXTEND_PROP1 = #{extendProp1,jdbcType=VARCHAR},
+		      EXTEND_PROP2 = #{extendProp2,jdbcType=VARCHAR},
+		      EXTEND_PROP3 = #{extendProp3,jdbcType=VARCHAR},
+		      LAST_OPERATOR_ID = #{lastOperatorId,jdbcType=BIGINT},
+		      LAST_OPERATOR = #{lastOperator,jdbcType=VARCHAR},
+		      LAST_OPERATED_TIME = #{lastOperatedTime,jdbcType=TIMESTAMP}
+		    where ID = #{id,jdbcType=BIGINT}
+  </update>
+
+</mapper>

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jshuabo.reportcenter.server.dao.mainline.IDryLineVicecardMapper" >
+
+  <resultMap id="dryLineVicecardResultMap" type="DryLineVicecard" >
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="VICE_CARD" property="viceCard" jdbcType="VARCHAR" />
+    <result column="CAR_CARD" property="carCard" jdbcType="VARCHAR" />
+    <result column="BALANCE" property="balance" jdbcType="DOUBLE" />
+    <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+    <result column="EXTEND_PROP1" property="extendProp1" jdbcType="VARCHAR" />
+    <result column="EXTEND_PROP2" property="extendProp2" jdbcType="VARCHAR" />
+    <result column="EXTEND_PROP3" property="extendProp3" jdbcType="VARCHAR" />
+    
+    <result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+	<result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+	<result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+	<result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+	<result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+	<result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+	
+	<association property="dryLineMaincard" column="MAIN_CARD_ID" select="com.jshuabo.reportcenter.server.dao.mainline.IDryLineMaincardMapper.selectById"/>
+  </resultMap>
+   
+  <sql id="Base_Column_List" >
+    ID, MAIN_CARD_ID, VICE_CARD, CAR_CARD, BALANCE, DESCRIPTION, EXTEND_PROP1, EXTEND_PROP2, 
+    EXTEND_PROP3, CREATOR_ID, CREATOR, CREATED_TIME, LAST_OPERATOR_ID, LAST_OPERATOR, 
+    LAST_OPERATED_TIME
+  </sql>
+  
+  <select id="page" parameterType="Map" resultMap="dryLineVicecardResultMap">
+		select <include refid="Base_Column_List" /> 
+			from t_dryline_vicecard where 1 = 1
+					<if test="maincard != null">
+						AND MAIN_CARD_ID = #{maincard}
+					</if>
+					<if test="vicecard != null">
+						AND VICE_CARD = #{vicecard}
+					</if>
+					<if test="carcard != null">
+						AND CAR_CARD = #{carcard}
+					</if>
+					<if test="sortOrder != null">
+						ORDER BY ${sortOrder}
+					</if>
+					<if test="offset != null">
+						LIMIT #{offset}, #{rows}
+					</if>
+	</select>
+
+	<select id="total" parameterType="Map" resultType="java.lang.Long">
+		select count(1) from t_dryline_vicecard where 1 = 1 
+			<if test="maincard != null">
+				AND MAIN_CARD = #{maincard}
+			</if>
+			<if test="vicecard != null">
+				AND VICE_CARD = #{vicecard}
+			</if>
+			<if test="carcard != null">
+				AND CAR_CARD = #{carcard}
+			</if>
+	</select>
+  
+  <select id="selectById" resultMap="dryLineVicecardResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_dryline_vicecard
+    where ID = #{id,jdbcType=BIGINT}
+  </select>
+  
+  <select id="selectByMaincardId" resultMap="dryLineVicecardResultMap" parameterType="java.lang.Long" >
+    select ID, VICE_CARD, CAR_CARD, BALANCE from t_dryline_vicecard
+    			where MAIN_CARD_ID = #{mainCardId,jdbcType=BIGINT}
+  </select>
+  
+  <delete id="deleteByIds" parameterType="java.lang.Long" >
+    delete from t_dryline_vicecard WHERE ID IN
+		<foreach item="item" index="index" collection="ids" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+  </delete>
+  
+  <insert id="insert" parameterType="Map" >
+    insert into t_dryline_vicecard
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="mainCardId != null" >
+        MAIN_CARD_ID,
+      </if>
+      <if test="viceCard != null" >
+        VICE_CARD,
+      </if>
+      <if test="carCard != null" >
+        CAR_CARD,
+      </if>
+      <if test="balance != null" >
+        BALANCE,
+      </if>
+      <if test="description != null" >
+        DESCRIPTION,
+      </if>
+      <if test="extendProp1 != null" >
+        EXTEND_PROP1,
+      </if>
+      <if test="extendProp2 != null" >
+        EXTEND_PROP2,
+      </if>
+      <if test="extendProp3 != null" >
+        EXTEND_PROP3,
+      </if>
+        CREATOR_ID,
+        CREATOR,
+        CREATED_TIME 
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="mainCardId != null" >
+        #{mainCardId,jdbcType=BIGINT},
+      </if>
+      <if test="viceCard != null" >
+        #{viceCard,jdbcType=VARCHAR},
+      </if>
+      <if test="carCard != null" >
+        #{carCard,jdbcType=VARCHAR},
+      </if>
+      <if test="balance != null" >
+        #{balance,jdbcType=DOUBLE},
+      </if>
+      <if test="description != null" >
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="extendProp1 != null" >
+        #{extendProp1,jdbcType=VARCHAR},
+      </if>
+      <if test="extendProp2 != null" >
+        #{extendProp2,jdbcType=VARCHAR},
+      </if>
+      <if test="extendProp3 != null" >
+        #{extendProp3,jdbcType=VARCHAR},
+      </if>
+        #{creatorId,jdbcType=BIGINT},
+        #{creator,jdbcType=VARCHAR},
+        #{createdTime,jdbcType=TIMESTAMP}
+    </trim>
+  </insert>
+   
+  <update id="update" parameterType="Map" >
+    update t_dryline_vicecard
+    set MAIN_CARD_ID = #{mainCardId,jdbcType=BIGINT},
+      VICE_CARD = #{viceCard,jdbcType=VARCHAR},
+      CAR_CARD = #{carCard,jdbcType=VARCHAR},
+      BALANCE = #{balance,jdbcType=DOUBLE},
+      DESCRIPTION = #{description,jdbcType=VARCHAR},
+      EXTEND_PROP1 = #{extendProp1,jdbcType=VARCHAR},
+      EXTEND_PROP2 = #{extendProp2,jdbcType=VARCHAR},
+      EXTEND_PROP3 = #{extendProp3,jdbcType=VARCHAR},
+      CREATOR_ID = #{creatorId,jdbcType=BIGINT},
+      CREATOR = #{creator,jdbcType=VARCHAR},
+      CREATED_TIME = #{createdTime,jdbcType=TIMESTAMP},
+      LAST_OPERATOR_ID = #{lastOperatorId,jdbcType=BIGINT},
+      LAST_OPERATOR = #{lastOperator,jdbcType=VARCHAR},
+      LAST_OPERATED_TIME = #{lastOperatedTime,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=BIGINT}
+  </update>
+  
+  <select id="getAllVicecardBalance" resultType="Map">
+  		SELECT
+			m.ID AS mainCard,
+			SUM(v.BALANCE) AS M_BALANCE,
+			v.VICE_CARD AS viceCard,
+			v.BALANCE AS V_BALANCE
+		FROM
+			t_dryline_vicecard v,
+			t_dryline_maincard m
+		WHERE
+			v.MAIN_CARD_ID = m.ID
+		GROUP BY
+			v.VICE_CARD
+  </select>
+</mapper>

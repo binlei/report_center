@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.finance.ISalesNoInDeliDataMapper">
+	<resultMap type="SalesData" id="salesDataResultMap">
+		<id property="id" column="ID" />
+		<result property="serialNo" column="SERIAL_NO" />
+		<result property="customerName" column="CUSTOMER_NAME" />
+		<result property="stationAddress" column="STATION_ADDRESS" />
+		<result property="saleDate" column="SALE_DATE" />
+		<result property="ngbossSaleQty" column="NGBOSS_SALEQTY" />
+		<result property="hallProperty" column="HALL_PROPERTY" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_SALES_ONOIN_DELI_DATA;
+			CREATE TABLE T_SALES_ONOIN_DELI_DATA
+			(
+			    ID INT(40) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			    SERIAL_NO VARCHAR(40) NOT NULL,
+			    CUSTOMER_NAME VARCHAR(255),
+			    STATION_ADDRESS VARCHAR(255),
+			    SALE_DATE DATE,
+			    NGBOSS_SALEQTY DOUBLE DEFAULT 0,
+			  	HALL_PROPERTY VARCHAR(20),
+			    EXTEND_PROP1 VARCHAR(200),
+			  	EXTEND_PROP2 VARCHAR(200),
+			  	CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX SERIAL_NO_INDEX(SERIAL_NO)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+	
+	<select id="page" parameterType="map" resultType="SalesData" resultMap="salesDataResultMap">
+            SELECT ID, SERIAL_NO, CUSTOMER_NAME, STATION_ADDRESS, SALE_DATE, NGBOSS_SALEQTY, HALL_PROPERTY, CREATED_TIME, EXTEND_PROP1
+            FROM T_SALES_ONOIN_DELI_DATA WHERE 1=1
+            <if test="creatorId != 1">
+            	AND CREATOR_ID = #{creatorId}
+            </if>
+			<if test="serialNo != null">
+		    	AND SERIAL_NO LIKE CONCAT('%',#{serialNo},'%' )
+		  	</if>
+			<if test="extendProp1 != null">
+	    		AND EXTEND_PROP1 = #{extendProp1}
+		  	</if>
+            <if test="sortOrder != null">
+		    	ORDER BY ${sortOrder}
+		  	</if>
+            LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+        SELECT count(ID) FROM T_SALES_ONOIN_DELI_DATA WHERE 1=1
+        <if test="creatorId != 1">
+         	AND CREATOR_ID = #{creatorId}
+        </if>
+		<if test="serialNo != null">
+	    	AND SERIAL_NO LIKE CONCAT('%',#{serialNo},'%' )
+	  	</if>
+	  	<if test="extendProp1 != null">
+    		AND EXTEND_PROP1 = #{extendProp1}
+	  	</if>
+	</select>
+	
+	<delete id="salesNoInDeliDataDelete" parameterType="String">
+		DELETE FROM T_SALES_ONOIN_DELI_DATA WHERE ID = #{id}
+	</delete>
+	
+	<delete id="deleteMore">
+		DELETE FROM T_SALES_ONOIN_DELI_DATA WHERE SERIAL_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<update id="setExPr" parameterType="map">
+		UPDATE T_SALES_ONOIN_DELI_DATA SET EXTEND_PROP1 = #{extendProp1} WHERE SERIAL_NO IN 
+		<foreach item="item" index="index" collection="serialNoList"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach>
+	</update>
+	
+</mapper>

@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.frame.server.dao.organization.IOrganizationMapper">
+	<resultMap type="Organization" id="organizationResultMap">
+		<id property="id" column="ID" jdbcType="BIGINT"/>
+		<result property="code" column="CODE" />
+		<result property="name" column="NAME" />
+		<result property="manager" column="MANAGER" />
+		<result property="description" column="DESCRIPTION" />
+		<result property="enabled" column="ENABLED" />
+		<result property="status" column="STATUS" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+
+		<result property="managerContact.identityNo" column="CONTACT_IDENTITY_NO" />
+		<result property="managerContact.birthDate" column="CONTACT_BIRTH_DATE" />
+		<result property="managerContact.sex" column="CONTACT_SEX" />
+		<result property="managerContact.address" column="CONTACT_ADDRESS" />
+		<result property="managerContact.tel" column="CONTACT_TEL" />
+		<result property="managerContact.mobile" column="CONTACT_MOBILE" />
+		<result property="managerContact.email" column="CONTACT_EMAIL" />
+		<result property="managerContact.qq" column="CONTACT_QQ" />
+
+		<result property="info.creatorId" column="CREATOR_ID" />
+		<result property="info.creator" column="CREATOR" />
+		<result property="info.createdTime" column="CREATED_TIME" />
+		<result property="info.lastOperatorId" column="LAST_OPERATOR_ID" />
+		<result property="info.lastOperator" column="LAST_OPERATOR" />
+		<result property="info.lastOperatedTime" column="LAST_OPERATED_TIME" />
+
+		<association property="type" column="ORG_TYPE_ID" jdbcType="BIGINT" javaType="com.jshuabo.frame.server.model.organization.OrganizationType" select="com.jshuabo.frame.server.dao.organization.IOrganizationTypeMapper.load" />		
+		<association property="parentOrg" column="PARENT_ORG_ID" jdbcType="BIGINT" javaType="com.jshuabo.frame.server.model.organization.Organization" select="load" />
+	</resultMap>
+
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS M_ORGANIZATION;
+			CREATE TABLE M_ORGANIZATION
+			(
+				ID BIGINT(20) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+		 		CODE VARCHAR(255) NOT NULL UNIQUE,
+		 		NAME VARCHAR(255),
+				ORG_TYPE_ID BIGINT(20),
+		 		PARENT_ORG_ID BIGINT(20),
+				MANAGER VARCHAR(255),
+		 		DESCRIPTION VARCHAR(255),
+		 		STATUS VARCHAR(255),
+		 		ENABLED BOOLEAN DEFAULT 0,
+				EXTEND_PROP1 VARCHAR(255),
+		 		EXTEND_PROP2 VARCHAR(255),
+				CONTACT_IDENTITY_NO VARCHAR(255),
+		 		CONTACT_BIRTH_DATE DATE,
+		 		CONTACT_SEX VARCHAR(255),
+				CONTACT_ADDRESS VARCHAR(500),
+		 		CONTACT_TEL VARCHAR(255),
+		 		CONTACT_MOBILE VARCHAR(255),
+				CONTACT_EMAIL VARCHAR(255),
+		 		CONTACT_QQ VARCHAR(255),
+				CREATOR_ID BIGINT(20),
+		 		CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+		 		LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX CODE_INDEX(CODE)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+	
+	<select id="page" parameterType="map" resultType="Organization" resultMap="organizationResultMap">
+            SELECT * FROM M_ORGANIZATION WHERE  1=1
+			<if test="name != ''">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+			<if test="pname != ''">
+		    	AND PARENT_ORG_ID IN(SELECT b.ID FROM M_ORGANIZATION b WHERE b.`NAME` LIKE CONCAT('%',#{pname},'%' ))
+		  	</if>
+            <if test="sortOrder != null">
+		    	ORDER BY ${sortOrder}
+		  	</if>
+            LIMIT #{offset}, #{rows}
+	</select>
+	
+	<!-- 获取所有渠道 -->
+	<select id="getAllChannel" resultType="Organization" resultMap="organizationResultMap">
+		SELECT ID,`NAME`,PARENT_ORG_ID,CODE FROM  M_ORGANIZATION WHERE  ORG_TYPE_ID='4'
+	</select>
+	
+	<!-- 查询用户id -->
+	<select id="queryOrgByUserId" parameterType="Long" resultType="Organization">
+		SELECT * FROM m_organization org WHERE org.ID  = #{userOrgId}
+	</select>
+	
+	<!-- 根据用户id  读取对应渠道 -->
+	<select id="getOrgByUserId" parameterType="java.lang.Long" resultMap="organizationResultMap">
+		SELECT DISTINCT org.id,org.`NAME` FROM m_organization org,m_user u WHERE u.ID =#{userOrgId} AND org.ID = u.ORGANIZATION_ID
+			or org.PARENT_ORG_ID = u.ORGANIZATION_ID 
+	</select>
+	
+	<!-- 根据用户  读取  对应分站-->
+	<select id="getSubstationByUser" parameterType="java.lang.Long" resultMap="organizationResultMap">
+		<if test="user.id != 15 and user.id != 16 and user.id != 17 and user.id != 38 and user.id != 50 and user.id != 53 and user.id != 1">
+			SELECT DISTINCT org.id,org.`NAME` FROM m_organization org,m_user u WHERE u.ID =#{user.id} AND org.ID = u.ORGANIZATION_ID
+		</if>
+		<if test="user.id == 15 or user.id == 16 or user.id == 17 or user.id == 38 or user.id == 50 or user.id == 53 or user.id == 1 ">
+			SELECT DISTINCT org.id,org.`NAME` FROM m_organization org,m_user u WHERE org.ID = u.ORGANIZATION_ID
+		</if>
+	</select>
+	
+	<select id="getChildOrgIds" parameterType="Long" resultType="Long">
+		SELECT org.id FROM m_organization org WHERE org.PARENT_ORG_ID  = #{parentId}
+	</select>
+	
+	<!-- 根据组织编号查询该组织所有下级组织 -->
+	<select id="getChildOrganizations" parameterType="String" resultType="Organization">
+		SELECT * FROM m_organization org WHERE org.PARENT_ORG_ID  = (SELECT ID FROM m_organization a where a.code = #{parentCode})
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+            SELECT count(ID) FROM M_ORGANIZATION WHERE 1=1
+			<if test="name != ''">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+			<if test="pname != ''">
+		    	AND PARENT_ORG_ID IN(SELECT b.ID FROM M_ORGANIZATION b WHERE b.`NAME` LIKE CONCAT('%',#{pname},'%' ))
+		  	</if>
+	</select>
+	
+	<select id="exportAll" parameterType="map" resultType="Organization" resultMap="organizationResultMap">
+            SELECT * FROM M_ORGANIZATION WHERE 1=1
+			<if test="name != ''">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+			<if test="pname != ''">
+		    	AND PARENT_ORG_ID IN(SELECT b.ID FROM M_ORGANIZATION b WHERE b.`NAME` LIKE CONCAT('%',#{pname},'%' ))
+		  	</if>
+	</select>
+	
+	<select id="exportSelections" resultType="Organization" resultMap="organizationResultMap">
+            SELECT * FROM M_ORGANIZATION WHERE ID IN
+            <foreach item="item" index="index" collection="list"   
+                     open="(" separator="," close=")">  
+                     #{item}  
+             </foreach> 
+	</select>
+	
+	<select id="load" parameterType="Long" resultType="Organization" resultMap="organizationResultMap">
+        SELECT * FROM M_ORGANIZATION WHERE ID = #{id,jdbcType=BIGINT} 
+	</select>
+
+	<select id="loadAll" resultType="Organization" resultMap="organizationResultMap">
+        <![CDATA[
+            SELECT * FROM M_ORGANIZATION
+        ]]>
+	</select>
+
+	<insert id="save" parameterType="Organization" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO M_ORGANIZATION (CODE,NAME,ORG_TYPE_ID,PARENT_ORG_ID,MANAGER,DESCRIPTION,EXTEND_PROP1,EXTEND_PROP2,
+			CONTACT_IDENTITY_NO,CONTACT_BIRTH_DATE,CONTACT_SEX,CONTACT_ADDRESS,CONTACT_TEL,
+			CONTACT_MOBILE,CONTACT_EMAIL,CONTACT_QQ,CREATOR_ID,CREATOR,CREATED_TIME,STATUS,
+			ENABLED
+		) VALUES (#{code},#{name},#{type.id},#{parentOrg.id},#{manager},#{description},#{extendProp1},#{extendProp2},#{managerContact.identityNo},
+			#{managerContact.birthDate},#{managerContact.sex},#{managerContact.address},#{managerContact.tel},#{managerContact.mobile},
+			#{managerContact.email},#{managerContact.qq},#{creatorId},#{creator},#{createdTime},
+			#{status},#{enabled}
+		)
+	</insert>
+
+	<update id="update" parameterType="Organization">
+		UPDATE M_ORGANIZATION
+		SET 
+			CODE = #{code},
+			NAME = #{name},
+			ORG_TYPE_ID = #{type.id},
+			PARENT_ORG_ID = #{parentOrg.id},
+			MANAGER = #{manager},
+			DESCRIPTION = #{description},
+			EXTEND_PROP1 = #{extendProp1},
+			EXTEND_PROP2 = #{extendProp2},
+			CONTACT_IDENTITY_NO = #{managerContact.identityNo},
+			CONTACT_BIRTH_DATE = #{managerContact.birthDate},
+			CONTACT_SEX = #{managerContact.sex},
+			CONTACT_ADDRESS = #{managerContact.address},
+			CONTACT_TEL = #{managerContact.tel},
+			CONTACT_MOBILE = #{managerContact.mobile},
+			CONTACT_EMAIL = #{managerContact.email},
+			CONTACT_QQ = #{managerContact.qq},
+			STATUS = #{status},
+			LAST_OPERATOR_ID = #{lastOperatorId},
+			LAST_OPERATOR = #{lastOperator},
+			LAST_OPERATED_TIME = #{lastOperatedTime},
+			ENABLED = #{enabled}
+		WHERE ID = #{id}
+	</update>
+
+	<delete id="delete" parameterType="Organization">
+		<![CDATA[
+			DELETE FROM M_ORGANIZATION WHERE ID = #{id}
+		]]>
+	</delete>
+
+	<delete id="deleteById" parameterType="Long">
+		<![CDATA[
+			DELETE FROM M_ORGANIZATION WHERE ID = #{id}
+		]]>
+	</delete>
+</mapper>

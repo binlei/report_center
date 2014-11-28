@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.serial.ISerialDataMapper">
+	<resultMap type="SerialData" id="serialDataResultMap">
+		<id property="id" column="ID" />
+		<result property="serialNo" column="SERIAL_NO" />
+		<result property="product" column="PRODUCT" />
+		<result property="serialDate" column="SERIAL_DATE" />
+		<result property="quantity" column="QUANTITY" />
+		<result property="price" column="PRICE" />
+		<result property="money" column="MONEY" />
+		<result property="address" column="ADDRESS" />
+		<result property="customer" column="CUSTOMER" />
+		<result property="supplier" column="SUPPLIER" />
+		<result property="orderNo" column="ORDER_NO" />
+		<result property="billNo" column="BILL_NO" />
+		<result property="warehouse" column="WAREHOUSE" />
+		<result property="status" column="STATUS" />
+		<result property="remarks" column="REMARKS" />
+		<result property="flag" column="FLAG" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+		<result property="extendProp3" column="EXTEND_PROP3" />
+		<result property="creatorId" column="CREATOR_ID" />
+		<result property="creator" column="CREATOR" />
+		<result property="createdTime" column="CREATED_TIME" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_SERIAL_DATA;
+			CREATE TABLE T_SERIAL_DATA
+			(
+			    ID INT(40) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			    SERIAL_NO VARCHAR(40) NOT NULL,
+			    PRODUCT VARCHAR(50),
+			    SERIAL_DATE DATE,
+			    QUANTITY DOUBLE DEFAULT 0,
+  				PRICE DOUBLE DEFAULT 0,
+				MONEY DOUBLE DEFAULT 0,
+				ADDRESS VARCHAR(100),
+				CUSTOMER VARCHAR(100),
+				SUPPLIER VARCHAR(100),
+				ORDER_NO VARCHAR(40),
+				BILL_NO VARCHAR(40),
+				WAREHOUSE VARCHAR(20),
+				STATUS VARCHAR(20),
+				REMARKS VARCHAR(3000),
+				FLAG INT,
+			    EXTEND_PROP1 VARCHAR(200),
+			    EXTEND_PROP2 VARCHAR(200),
+				EXTEND_PROP3 VARCHAR(200),
+			    CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX SERIAL_NO_INDEX(SERIAL_NO)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="page" parameterType="map" resultType="SerialData"
+		resultMap="serialDataResultMap">
+		SELECT ID, SERIAL_NO, PRODUCT, SERIAL_DATE, QUANTITY, PRICE, MONEY,
+		ADDRESS, CUSTOMER, SUPPLIER, ORDER_NO,
+		BILL_NO, WAREHOUSE, STATUS,
+		REMARKS, FLAG FROM T_SERIAL_DATA WHERE 1=1
+		<if test="serialNo != null">
+			AND SERIAL_NO LIKE CONCAT('%',#{serialNo},'%' )
+		</if>
+		<if test="product != null">
+			AND PRODUCT LIKE CONCAT('%',#{product},'%' )
+		</if>
+		<if test="address != null">
+			AND ADDRESS LIKE CONCAT('%',#{address},'%' )
+		</if>
+		<if test="customer != null">
+			AND CUSTOMER LIKE CONCAT('%',#{customer},'%' )
+		</if>
+		<if test="supplier != null">
+			AND SUPPLIER LIKE CONCAT('%',#{supplier},'%' )
+		</if>
+		<if test="orderNo != null">
+			AND ORDER_NO LIKE CONCAT('%',#{orderNo},'%' )
+		</if>
+		<if test="billNo != null">
+			AND BILL_NO LIKE CONCAT('%',#{billNo},'%' )
+		</if>
+		<if test="warehouse != null">
+			AND WAREHOUSE = #{warehouse}
+		</if>
+		<if test="status != null">
+			AND STATUS = #{status}
+		</if>
+		<if test="sortOrder != null">
+			ORDER BY ${sortOrder}
+		</if>
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+
+	<select id="total" parameterType="map" resultType="Long">
+		SELECT COUNT(1) FROM T_SERIAL_DATA WHERE 1=1
+		<if test="serialNo != null">
+			AND SERIAL_NO LIKE CONCAT('%',#{serialNo},'%' )
+		</if>
+		<if test="product != null">
+			AND PRODUCT LIKE CONCAT('%',#{product},'%' )
+		</if>
+		<if test="address != null">
+			AND ADDRESS LIKE CONCAT('%',#{address},'%' )
+		</if>
+		<if test="customer != null">
+			AND CUSTOMER LIKE CONCAT('%',#{customer},'%' )
+		</if>
+		<if test="supplier != null">
+			AND SUPPLIER LIKE CONCAT('%',#{supplier},'%' )
+		</if>
+		<if test="orderNo != null">
+			AND ORDER_NO LIKE CONCAT('%',#{orderNo},'%' )
+		</if>
+		<if test="billNo != null">
+			AND BILL_NO LIKE CONCAT('%',#{billNo},'%' )
+		</if>
+		<if test="warehouse != null">
+			AND WAREHOUSE = #{warehouse}
+		</if>
+		<if test="status != null">
+			AND STATUS = #{status}
+		</if>
+	</select>
+
+
+	<!-- peng.wu -->
+	<select id="realityPage" parameterType="map" resultType="SerialData" resultMap="serialDataResultMap">
+		SELECT 	A.ID, A.SERIAL_NO, A.PRODUCT, A.SERIAL_DATE,
+			A.QUANTITY, A.PRICE, A.MONEY, A.ADDRESS, A.CUSTOMER,
+			A.SUPPLIER, A.ORDER_NO, A.BILL_NO,
+			A.WAREHOUSE, A. STATUS, A.REMARKS, A.FLAG FROM T_SERIAL_DATA  A WHERE 1 = 1
+		<if test="serialNo != null">
+			AND A.SERIAL_NO LIKE CONCAT('%',#{serialNo},'%' )
+		</if>
+		<if test="product != null">
+			AND A.PRODUCT LIKE CONCAT('%',#{product},'%' )
+		</if>
+		<if test="address != null">
+			AND A.ADDRESS LIKE CONCAT('%',#{address},'%' )
+		</if>
+		<if test="customer != null">
+			AND A.CUSTOMER LIKE CONCAT('%',#{customer},'%' )
+		</if>
+		<if test="supplier != null">
+			AND A.SUPPLIER LIKE CONCAT('%',#{supplier},'%' )
+		</if>
+		<if test="orderNo != null">
+			AND A.ORDER_NO LIKE CONCAT('%',#{orderNo},'%' )
+		</if>
+		<if test="billNo != null">
+			AND A.BILL_NO LIKE CONCAT('%',#{billNo},'%' )
+		</if>
+		<if test="warehouse != null">
+			AND A.WAREHOUSE = #{warehouse}
+		</if>
+		<if test="status != null">
+			AND A.STATUS = #{status}
+		</if>
+		GROUP BY SERIAL_NO
+		<if test="sortOrder != null">
+			ORDER BY ${sortOrder}
+		</if>
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+
+	<!-- peng.wu -->
+	<select id="realityTotal" parameterType="map" resultType="Long">
+		SELECT COUNT(a.ID) FROM (SELECT ID FROM T_SERIAL_DATA where 1 = 1
+		<if test="serialNo != null">
+			AND SERIAL_NO LIKE CONCAT('%',#{serialNo},'%' )
+		</if>
+		<if test="product != null">
+			AND PRODUCT LIKE CONCAT('%',#{product},'%' )
+		</if>
+		<if test="address != null">
+			AND ADDRESS LIKE CONCAT('%',#{address},'%' )
+		</if>
+		<if test="customer != null">
+			AND CUSTOMER LIKE CONCAT('%',#{customer},'%' )
+		</if>
+		<if test="supplier != null">
+			AND SUPPLIER LIKE CONCAT('%',#{supplier},'%' )
+		</if>
+		<if test="orderNo != null">
+			AND ORDER_NO LIKE CONCAT('%',#{orderNo},'%' )
+		</if>
+		<if test="billNo != null">
+			AND BILL_NO LIKE CONCAT('%',#{billNo},'%' )
+		</if>
+		<if test="warehouse != null">
+			AND WAREHOUSE = #{warehouse}
+		</if>
+		<if test="status != null">
+			AND STATUS = #{status}
+		</if>
+		GROUP BY SERIAL_NO) a
+	</select>
+
+	<insert id="save" parameterType="java.util.List">
+		INSERT INTO T_SERIAL_DATA (
+		SERIAL_NO,
+		PRODUCT,
+		SERIAL_DATE,
+		QUANTITY,
+		PRICE,
+		MONEY,
+		ADDRESS,
+		CUSTOMER,
+		SUPPLIER,
+		ORDER_NO,
+		BILL_NO,
+		WAREHOUSE,
+		STATUS,
+		REMARKS,
+		FLAG,
+		CREATOR_ID,
+		CREATOR,
+		CREATED_TIME
+		) VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(#{item.serialNo},#{item.product},#{item.serialDate},#{item.quantity},
+			#{item.price},#{item.money},#{item.address},#{item.customer},
+			#{item.supplier},#{item.orderNo},#{item.billNo},#{item.warehouse},
+			#{item.status},#{item.remarks},#{item.flag},
+			#{item.creatorId},#{item.creator},#{item.createdTime})
+		</foreach>
+	</insert>
+
+	<delete id="deleteById" parameterType="java.util.List">
+		DELETE FROM T_SERIAL_DATA WHERE ID IN
+		<foreach item="item" index="index" collection="list" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<update id="updataInfo" parameterType="map">
+		UPDATE T_SERIAL_DATA SET
+		SERIAL_NO = #{serialNo},
+		PRODUCT = #{product},
+		SERIAL_DATE =
+		#{serialDate},
+		QUANTITY = #{quantity},
+		PRICE = #{price},
+		MONEY =
+		#{money},
+		ADDRESS = #{address},
+		CUSTOMER = #{customer},
+		SUPPLIER =
+		#{supplier},
+		ORDER_NO = #{orderNo},
+		BILL_NO = #{billNo},
+		WAREHOUSE =
+		#{warehouse},
+		STATUS = #{status},
+		REMARKS = #{remarks},
+		FLAG = #{flag}
+		WHERE ID = #{id}
+	</update>
+
+	<insert id="saveInfo" parameterType="map">
+		INSERT INTO T_SERIAL_DATA (
+		SERIAL_NO,
+		PRODUCT,
+		SERIAL_DATE,
+		QUANTITY,
+		PRICE,
+		MONEY,
+		ADDRESS,
+		CUSTOMER,
+		SUPPLIER,
+		ORDER_NO,
+		BILL_NO,
+		WAREHOUSE,
+		STATUS,
+		REMARKS,
+		FLAG,
+		CREATOR_ID,
+		CREATOR,
+		CREATED_TIME
+		) VALUES
+		(#{serialNo},#{product},#{serialDate},#{quantity},
+		#{price},#{money},#{address},#{customer},
+		#{supplier},#{orderNo},#{billNo},#{warehouse},
+		#{status},#{remarks},#{flag},
+		#{creatorId},#{creator},#{createdTime})
+	</insert>
+
+	<select id="getInfoById" parameterType="String" resultType="SerialData"
+		resultMap="serialDataResultMap">
+		SELECT ID, SERIAL_NO, PRODUCT, SERIAL_DATE, QUANTITY, PRICE,
+		MONEY, ADDRESS, CUSTOMER, SUPPLIER, ORDER_NO,
+		BILL_NO, WAREHOUSE,
+		STATUS, REMARKS FROM T_SERIAL_DATA WHERE ID = #{id}
+	</select>
+
+	<select id="getAllSerialNoAndFlag" resultType="SerialData"
+		resultMap="serialDataResultMap">
+		SELECT SERIAL_NO, SUM(FLAG) AS FLAG FROM T_SERIAL_DATA GROUP
+		BY SERIAL_NO
+	</select>
+
+	<!-- peng.wu -->
+	<insert id="importIMEIData" parameterType="java.util.List">
+		<selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO T_SERIAL_DATA (
+		SERIAL_NO, PRODUCT, SERIAL_DATE,
+		QUANTITY,
+		PRICE, MONEY, ADDRESS, CUSTOMER,
+		SUPPLIER, ORDER_NO, BILL_NO,
+		WAREHOUSE, STATUS,
+		REMARKS
+		) VALUES
+		<foreach collection="listMap" item="item" index="index"
+			separator=",">
+			(#{item.serialNo,jdbcType=VARCHAR},#{item.product,jdbcType=VARCHAR},#{item.serialDate,jdbcType=TIMESTAMP},
+			#{item.quantity,jdbcType=DOUBLE},#{item.price,jdbcType=DOUBLE},#{item.money,jdbcType=DOUBLE},
+			#{item.address,jdbcType=VARCHAR},#{item.customer,jdbcType=VARCHAR},
+			#{item.supplier,jdbcType=VARCHAR},#{item.orderNo,jdbcType=VARCHAR},#{item.billNo,jdbcType=VARCHAR},
+			#{item.warehouse,jdbcType=VARCHAR},
+			#{item.status,jdbcType=VARCHAR},#{item.remarks,jdbcType=VARCHAR})
+		</foreach>
+	</insert>
+
+	<!-- peng.wu -->
+	<select id="exprot2Excel" resultMap="serialDataResultMap" parameterType="Map">
+		SELECT ID, SERIAL_NO, PRODUCT, SERIAL_DATE, QUANTITY, PRICE, MONEY,
+		ADDRESS, CUSTOMER, SUPPLIER, ORDER_NO,
+		BILL_NO, WAREHOUSE, STATUS, REMARKS, FLAG FROM T_SERIAL_DATA WHERE 1 = 1
+		<if test="serialNo != null">
+			AND SERIAL_NO = #{serialNo}
+		</if>
+		<if test="product != null">
+			AND PRODUCT = #{product}
+		</if>
+		<if test="address != null">
+			AND ADDRESS = #{address}
+		</if>
+		<if test="customer != null">
+			AND CUSTOMER = #{customer}
+		</if>
+		<if test="supplier != null">
+			AND SUPPLIER = #{supplier}
+		</if>
+		<if test="orderNo != null">
+			AND ORDER_NO = #{orderNo}
+		</if>
+		<if test="billNo != null">
+			AND BILL_NO = #{billNo}
+		</if>
+		<if test="warehouse != null">
+			AND WAREHOUSE = #{warehouse}
+		</if>
+		<if test="status != null">
+			AND STATUS = #{status}
+		</if>
+		<if test="mark == 'mark'">
+			GROUP BY SERIAL_NO 
+		</if>
+		<if test="sortOrder != null">
+			ORDER BY ${sortOrder}
+		</if>
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+
+	<!-- peng.wu -->
+	<select id="exprotPageData" resultType="Map" parameterType="Map">
+		select MAX(ID) 'MAX',MIN(ID) 'MIN',COUNT(ID) 'COUNT' from
+		T_SERIAL_DATA WHERE 1=1
+		<if test="serialNo != null">
+			AND SERIAL_NO = #{serialNo}
+		</if>
+		<if test="product != null">
+			AND PRODUCT = #{product}
+		</if>
+		<if test="address != null">
+			AND ADDRESS = #{address}
+		</if>
+		<if test="customer != null">
+			AND CUSTOMER = #{customer}
+		</if>
+		<if test="supplier != null">
+			AND SUPPLIER = #{supplier}
+		</if>
+		<if test="orderNo != null">
+			AND ORDER_NO = #{orderNo}
+		</if>
+		<if test="billNo != null">
+			AND BILL_NO = #{billNo}
+		</if>
+		<if test="warehouse != null">
+			AND WAREHOUSE = #{warehouse}
+		</if>
+		<if test="status != null">
+			AND STATUS = #{status}
+		</if>
+		<if test="sortOrder != null">
+			ORDER BY ${sortOrder}
+		</if>
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+
+	<!-- peng.wu -->
+	<insert id="saveSerialData" parameterType="SerialData">
+		<selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO T_SERIAL_DATA (
+					SERIAL_NO, PRODUCT, SERIAL_DATE,
+					QUANTITY, PRICE, MONEY, ADDRESS,
+					CUSTOMER, SUPPLIER, ORDER_NO,
+					BILL_NO, WAREHOUSE, STATUS, REMARKS,
+					FLAG, CREATOR_ID, CREATOR, CREATED_TIME ) 
+			VALUES (
+				#{serialNo},#{product},#{serialDate},#{quantity},
+				#{price},#{money},#{address},#{customer},
+				#{supplier},#{orderNo},#{billNo},#{warehouse},
+				#{status},#{remarks},#{flag},
+				#{creatorId},#{creator},#{createdTime})
+
+	</insert>
+</mapper>

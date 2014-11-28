@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.payment.IWithholdingReturnDataMapper">
+	<resultMap type="WithholdingReturnData" id="withholdingReturnResultMap">
+		<id property="id" column="ID" />
+		<result property="settleNo" column="SETTLE_NO" />
+		<result property="uaReturnMoney" column="UARETURN_MONEY" />
+		<result property="uaReturnMonth" column="UARETURN_MONTH" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+		<result property="creatorId" column="CREATOR_ID" />
+		<result property="creator" column="CREATOR" />
+		<result property="createdTime" column="CREATED_TIME" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_WITHHOLDING_RETURN_DATA;
+			CREATE TABLE T_WITHHOLDING_RETURN_DATA
+			(
+				ID INT(40) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				SETTLE_NO VARCHAR(40) NOT NULL,
+				UARETURN_MONEY DOUBLE,
+				UARETURN_MONTH DATE,
+				EXTEND_PROP1 VARCHAR(200),
+			  	EXTEND_PROP2 VARCHAR(200),
+			  	CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX SETTLE_NO_INDEX(SETTLE_NO)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="page" parameterType="map" resultType="WithholdingReturnData" resultMap="withholdingReturnResultMap">
+		SELECT ID, SETTLE_NO, ROUND(UARETURN_MONEY, 2) UARETURN_MONEY, UARETURN_MONTH FROM T_WITHHOLDING_RETURN_DATA WHERE 1=1
+		<if test="settleNo != null">
+   			AND SETTLE_NO LIKE CONCAT('%',#{settleNo},'%' )
+ 		</if>
+ 		<if test="sortOrder != null">
+	    	ORDER BY ${sortOrder}
+	  	</if>
+        LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+         SELECT count(ID) FROM T_WITHHOLDING_RETURN_DATA WHERE 1=1
+		<if test="settleNo != null">
+			AND SETTLE_NO LIKE CONCAT('%',#{settleNo},'%' )
+		</if>
+	</select>
+	
+	<insert id="save" parameterType="java.util.List">
+		INSERT INTO T_WITHHOLDING_RETURN_DATA (
+	        SETTLE_NO,
+			UARETURN_MONEY,
+			UARETURN_MONTH,
+			EXTEND_PROP1,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES 
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.settleNo},#{item.uaReturnMoney},#{item.uaReturnMonth},
+			 #{item.extendProp1},#{item.creatorId},#{item.creator},#{item.createdTime})
+		 </foreach>
+	</insert>
+	
+	<select id="getAllSettleNo" resultType="String" >
+         SELECT SETTLE_NO FROM T_WITHHOLDING_RETURN_DATA GROUP BY SETTLE_NO HAVING COUNT(*) > 1 
+	</select>
+	
+	<select id="dataDelete" parameterType="String" >
+         DELETE FROM T_WITHHOLDING_RETURN_DATA WHERE ID = #{id}
+	</select>
+	
+	<delete id="deleteMore">
+		DELETE FROM T_WITHHOLDING_RETURN_DATA WHERE SETTLE_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<delete id="delete">
+		DELETE FROM T_WITHHOLDING_RETURN_DATA WHERE EXTEND_PROP1 = 0 AND SETTLE_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<select id="noInWithHold" resultType="String">
+		SELECT SETTLE_NO FROM T_WITHHOLDING_RETURN_DATA WHERE EXTEND_PROP1 = 0 AND SETTLE_NO NOT IN (SELECT SETTLE_NO FROM T_WITHHOLDING_DATA) 
+	</select>
+	
+	<update id="setToOne" parameterType="Long">
+		UPDATE T_WITHHOLDING_RETURN_DATA SET EXTEND_PROP1 = 1 WHERE EXTEND_PROP1 = 0
+	</update>
+	
+	<select id="getRetuBySettleNo" parameterType="String" resultType="WithholdingReturnData" resultMap="withholdingReturnResultMap">
+		SELECT SETTLE_NO, UARETURN_MONEY, UARETURN_MONTH, EXTEND_PROP1 FROM T_WITHHOLDING_RETURN_DATA WHERE SETTLE_NO = #{settleNo}
+	</select>
+	
+	<update id="updateInfo" parameterType="map">
+		UPDATE T_WITHHOLDING_RETURN_DATA SET UARETURN_MONEY = #{uaReturnMoney}, UARETURN_MONTH = #{uaReturnMonth} WHERE SETTLE_NO = #{settleNo}
+	</update>
+	
+	<insert id="saveInfo" parameterType="map">
+		INSERT INTO T_WITHHOLDING_RETURN_DATA (
+	        SETTLE_NO,
+			UARETURN_MONEY,
+			UARETURN_MONTH,
+			EXTEND_PROP1,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES (
+			#{settleNo},
+			#{uaReturnMoney},
+			#{uaReturnMonth},
+			#{extendProp1},
+			#{creatorId},
+			#{creator},
+			#{createdTime}
+		)
+	</insert>
+	
+</mapper>

@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.jshuabo.reportcenter.server.dao.automobile.IBranchLineCarInfoMapper">
+	<resultMap type="BranchLineCarInfo" id="branchLineCarInfoResultMap">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+	    <result column="DEPUTY_CARD" property="deputyCard" jdbcType="VARCHAR" />
+	    <result column="CAR_KIND" property="carKind" jdbcType="VARCHAR" />
+	    <result column="LICENSE_NO" property="licenseNo" jdbcType="VARCHAR" />
+	    <result column="LICENSE" property="license" jdbcType="VARCHAR" />
+	    <result column="LICENSE_DATE" property="licenseDate" jdbcType="DATE" />
+	    <result column="LICENSE_NAME" property="licenseName" jdbcType="VARCHAR" />
+	    <result column="INSPECTION_DATE" property="inspectionDate" jdbcType="DATE" />
+	    <result column="NAME" property="name" jdbcType="VARCHAR" />
+	    <result column="ID_CARD" property="idCard" jdbcType="VARCHAR" />
+	    <result column="FT_RECEIVE" property="ftReceive" jdbcType="DATE" />
+	    <result column="CHANGE_DATE" property="changeDate" jdbcType="DATE" />
+	    <result column="TELEPHONE" property="telephone" jdbcType="VARCHAR" />
+	    <result column="STRONG_INSDATE" property="strongInsdate" jdbcType="DATE" />
+	    <result column="TL_INSURANCE" property="tlInsurance" jdbcType="DOUBLE" />
+	    <result column="TL_INSURANCE_DATE" property="tlInsuranceDate" jdbcType="DATE" />
+	    <result column="POLICE_PROVE" property="policeProve" jdbcType="VARCHAR" />
+	    <result column="HOUSEHOLD_COPY" property="householdCopy" jdbcType="VARCHAR" />
+	    <result column="IDCARD_COPY" property="idcardCopy" jdbcType="VARCHAR" />
+	    <result column="LICENSE_COPY" property="licenseCopy" jdbcType="VARCHAR" />
+	    <result column="GUARAN_RESPON" property="guaranRespon" jdbcType="VARCHAR" />
+	    <result column="GUARAN_INCOME" property="guaranIncome" jdbcType="VARCHAR" />
+	    <result column="GUARANHOUSE_COPY" property="guaranhouseCopy" jdbcType="VARCHAR" />
+	    <result column="GUARANID_COPY" property="guaranidCopy" jdbcType="VARCHAR" />
+	    <result column="DRILICENSE_COPY" property="drilicenseCopy" jdbcType="VARCHAR" />
+	    <result column="STRONGINS_COPY" property="stronginsCopy" jdbcType="VARCHAR" />
+	    <result column="COMMERINSU_COPY" property="commerinsuCopy" jdbcType="VARCHAR" />
+	    <result column="CERTIFICATE" property="certificate" jdbcType="VARCHAR" />
+	    <result column="AGREE_DATE" property="agreeDate" jdbcType="DATE" />
+	    <result column="RENTAL_AGREEMENT" property="rentalAgreement" jdbcType="VARCHAR" />
+	    <result column="STRONGINS_PROMPT" property="stronginsPrompt" jdbcType="VARCHAR" />
+	    <result column="TLINSURANCE_PROMPT" property="tlinsurancePrompt" jdbcType="VARCHAR" />
+	    <result column="INSPECTION_PROMPT" property="inspectionPrompt" jdbcType="VARCHAR" />
+	    <result column="CHANGE_PROMPT" property="changePrompt" jdbcType="VARCHAR" />
+	    <result column="STATUS" property="status" jdbcType="VARCHAR" />
+	    <result column="EXTEND_PROP1" property="extendProp1" jdbcType="VARCHAR" />
+	    <result column="EXTEND_PROP2" property="extendProp2" jdbcType="VARCHAR" />
+	    <result column="EXTEND_PROP3" property="extendProp3" jdbcType="VARCHAR" />
+
+		<result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+		<result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+		<result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+		<result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+		<result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+		<result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+		
+		<association property="subStation" column="SUB_STATION" javaType="Organization" select="com.jshuabo.frame.server.dao.organization.IOrganizationMapper.load" >
+			<id column="ID" property="id" jdbcType="BIGINT" />
+			<result column="CODE" property="code" jdbcType="VARCHAR" />
+			<result column="NAME" property="name" jdbcType="VARCHAR" />
+			<result column="STATUS" property="status" jdbcType="VARCHAR" />
+		</association>
+	</resultMap>
+
+	<sql id="Base_Column_List" >
+	  ID, SUB_STATION, DEPUTY_CARD, CAR_KIND, LICENSE_NO, LICENSE, LICENSE_DATE, LICENSE_NAME, 
+	  INSPECTION_DATE, NAME, ID_CARD, FT_RECEIVE, CHANGE_DATE, TELEPHONE, STRONG_INSDATE, 
+	  TL_INSURANCE, TL_INSURANCE_DATE, POLICE_PROVE, HOUSEHOLD_COPY, IDCARD_COPY, LICENSE_COPY, 
+	  GUARAN_RESPON, GUARAN_INCOME, GUARANHOUSE_COPY, GUARANID_COPY, DRILICENSE_COPY, STRONGINS_COPY, 
+	  COMMERINSU_COPY, CERTIFICATE, AGREE_DATE, RENTAL_AGREEMENT, STRONGINS_PROMPT, TLINSURANCE_PROMPT, 
+	  INSPECTION_PROMPT, CHANGE_PROMPT, STATUS, EXTEND_PROP1, EXTEND_PROP2, EXTEND_PROP3, 
+	  CREATOR_ID, CREATOR, CREATED_TIME, LAST_OPERATOR_ID, LAST_OPERATOR, LAST_OPERATED_TIME
+	</sql>
+	
+	<select id="page" parameterType="map" resultType="BranchLineCarInfo" resultMap="branchLineCarInfoResultMap">
+		SELECT <include refid="Base_Column_List"/>  FROM t_branchline_car_info WHERE 1=1
+		<if test="subStation != null and subStation != 1 and subStation != 15 and subStation != 16 and subStation != 17 and subStation != 38 and subStation != 50 and subStation != 53">
+			AND SUB_STATION = #{subStation}
+		</if>
+		<if test="name != null">
+			AND NAME LIKE CONCAT('%',#{name},'%')
+		</if>
+		<if test="sortOrder != null">
+			ORDER BY ${sortOrder}
+		</if>
+		<if test="offset != null">
+			LIMIT #{offset},
+		</if>
+		<if test="rows != null">
+			#{rows}
+		</if>
+	</select>
+
+	<select id="total" parameterType="map" resultType="Long">
+		SELECT COUNT(1) FROM t_branchline_car_info WHERE 1=1
+		<if test="subStation != null and subStation != 1 and subStation != 33">
+			AND SUB_STATION = #{subStation}
+		</if>
+		<if test="nj == 33">
+			AND SUB_STATION = #{nj}
+		</if>
+		<if test="name != null">
+			AND NAME LIKE CONCAT('%',#{name},'%')
+		</if>
+	</select>
+
+	<select id="selectById" resultMap="branchLineCarInfoResultMap" parameterType="java.lang.Long">
+		select
+			<include refid="Base_Column_List" />
+				from t_branchline_car_info
+				where ID = #{id,jdbcType=BIGINT}
+	</select>
+
+	<insert id="insert" parameterType="Map" >
+		insert into t_branchline_car_info
+		<trim prefix="(" suffix=")" suffixOverrides="," >
+		  <if test="id != null" >
+		    ID,
+		  </if>
+		  <if test="subStation != null" >
+		    SUB_STATION,
+		  </if>
+		  <if test="deputyCard != null" >
+		    DEPUTY_CARD,
+		  </if>
+		  <if test="carKind != null" >
+		    CAR_KIND,
+		  </if>
+		  <if test="licenseNo != null" >
+		    LICENSE_NO,
+		  </if>
+		  <if test="license != null" >
+		    LICENSE,
+		  </if>
+		  <if test="licenseDate != null" >
+		    LICENSE_DATE,
+		  </if>
+		  <if test="licenseName != null" >
+		    LICENSE_NAME,
+		  </if>
+		  <if test="inspectionDate != null" >
+		    INSPECTION_DATE,
+		  </if>
+		  <if test="name != null" >
+		    NAME,
+		  </if>
+		  <if test="idCard != null" >
+		    ID_CARD,
+		  </if>
+		  <if test="ftReceive != null" >
+		    FT_RECEIVE,
+		  </if>
+		  <if test="changeDate != null" >
+		    CHANGE_DATE,
+		  </if>
+		  <if test="telephone != null" >
+		    TELEPHONE,
+		  </if>
+		  <if test="strongInsdate != null" >
+		    STRONG_INSDATE,
+		  </if>
+		  <if test="tlInsurance != null" >
+		    TL_INSURANCE,
+		  </if>
+		  <if test="tlInsuranceDate != null" >
+		    TL_INSURANCE_DATE,
+		  </if>
+		  <if test="policeProve != null" >
+		    POLICE_PROVE,
+		  </if>
+		  <if test="householdCopy != null" >
+		    HOUSEHOLD_COPY,
+		  </if>
+		  <if test="idcardCopy != null" >
+		    IDCARD_COPY,
+		  </if>
+		  <if test="licenseCopy != null" >
+		    LICENSE_COPY,
+		  </if>
+		  <if test="guaranRespon != null" >
+		    GUARAN_RESPON,
+		  </if>
+		  <if test="guaranIncome != null" >
+		    GUARAN_INCOME,
+		  </if>
+		  <if test="guaranhouseCopy != null" >
+		    GUARANHOUSE_COPY,
+		  </if>
+		  <if test="guaranidCopy != null" >
+		    GUARANID_COPY,
+		  </if>
+		  <if test="drilicenseCopy != null" >
+		    DRILICENSE_COPY,
+		  </if>
+		  <if test="stronginsCopy != null" >
+		    STRONGINS_COPY,
+		  </if>
+		  <if test="commerinsuCopy != null" >
+		    COMMERINSU_COPY,
+		  </if>
+		  <if test="certificate != null" >
+		    CERTIFICATE,
+		  </if>
+		  <if test="agreeDate != null" >
+		    AGREE_DATE,
+		  </if>
+		  <if test="rentalAgreement != null" >
+		    RENTAL_AGREEMENT,
+		  </if>
+		  <if test="stronginsPrompt != null" >
+		    STRONGINS_PROMPT,
+		  </if>
+		  <if test="tlinsurancePrompt != null" >
+		    TLINSURANCE_PROMPT,
+		  </if>
+		  <if test="inspectionPrompt != null" >
+		    INSPECTION_PROMPT,
+		  </if>
+		  <if test="changePrompt != null" >
+		    CHANGE_PROMPT,
+		  </if>
+		  <if test="status != null" >
+		    STATUS,
+		  </if>
+		  <if test="extendProp1 != null" >
+		    EXTEND_PROP1,
+		  </if>
+		  <if test="extendProp2 != null" >
+		    EXTEND_PROP2,
+		  </if>
+		  <if test="extendProp3 != null" >
+		    EXTEND_PROP3,
+		  </if>
+		  <if test="creatorId != null" >
+		    CREATOR_ID,
+		  </if>
+		  <if test="creator != null" >
+		    CREATOR,
+		  </if>
+		  <if test="createdTime != null" >
+		    CREATED_TIME
+		  </if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides="," >
+		  <if test="id != null" >
+		    #{id,jdbcType=INTEGER},
+		  </if>
+		  <if test="subStation != null" >
+		    #{subStation,jdbcType=VARCHAR},
+		  </if>
+		  <if test="deputyCard != null" >
+		    #{deputyCard,jdbcType=VARCHAR},
+		  </if>
+		  <if test="carKind != null" >
+		    #{carKind,jdbcType=VARCHAR},
+		  </if>
+		  <if test="licenseNo != null" >
+		    #{licenseNo,jdbcType=VARCHAR},
+		  </if>
+		  <if test="license != null" >
+		    #{license,jdbcType=VARCHAR},
+		  </if>
+		  <if test="licenseDate != null" >
+		    #{licenseDate,jdbcType=DATE},
+		  </if>
+		  <if test="licenseName != null" >
+		    #{licenseName,jdbcType=VARCHAR},
+		  </if>
+		  <if test="inspectionDate != null" >
+		    #{inspectionDate,jdbcType=DATE},
+		  </if>
+		  <if test="name != null" >
+		    #{name,jdbcType=VARCHAR},
+		  </if>
+		  <if test="idCard != null" >
+		    #{idCard,jdbcType=VARCHAR},
+		  </if>
+		  <if test="ftReceive != null" >
+		    #{ftReceive,jdbcType=DATE},
+		  </if>
+		  <if test="changeDate != null" >
+		    #{changeDate,jdbcType=DATE},
+		  </if>
+		  <if test="telephone != null" >
+		    #{telephone,jdbcType=VARCHAR},
+		  </if>
+		  <if test="strongInsdate != null" >
+		    #{strongInsdate,jdbcType=DATE},
+		  </if>
+		  <if test="tlInsurance != null" >
+		    #{tlInsurance,jdbcType=DOUBLE},
+		  </if>
+		  <if test="tlInsuranceDate != null" >
+		    #{tlInsuranceDate,jdbcType=DATE},
+		  </if>
+		  <if test="policeProve != null" >
+		    #{policeProve,jdbcType=VARCHAR},
+		  </if>
+		  <if test="householdCopy != null" >
+		    #{householdCopy,jdbcType=VARCHAR},
+		  </if>
+		  <if test="idcardCopy != null" >
+		    #{idcardCopy,jdbcType=VARCHAR},
+		  </if>
+		  <if test="licenseCopy != null" >
+		    #{licenseCopy,jdbcType=VARCHAR},
+		  </if>
+		  <if test="guaranRespon != null" >
+		    #{guaranRespon,jdbcType=VARCHAR},
+		  </if>
+		  <if test="guaranIncome != null" >
+		    #{guaranIncome,jdbcType=VARCHAR},
+		  </if>
+		  <if test="guaranhouseCopy != null" >
+		    #{guaranhouseCopy,jdbcType=VARCHAR},
+		  </if>
+		  <if test="guaranidCopy != null" >
+		    #{guaranidCopy,jdbcType=VARCHAR},
+		  </if>
+		  <if test="drilicenseCopy != null" >
+		    #{drilicenseCopy,jdbcType=VARCHAR},
+		  </if>
+		  <if test="stronginsCopy != null" >
+		    #{stronginsCopy,jdbcType=VARCHAR},
+		  </if>
+		  <if test="commerinsuCopy != null" >
+		    #{commerinsuCopy,jdbcType=VARCHAR},
+		  </if>
+		  <if test="certificate != null" >
+		    #{certificate,jdbcType=VARCHAR},
+		  </if>
+		  <if test="agreeDate != null" >
+		    #{agreeDate,jdbcType=DATE},
+		  </if>
+		  <if test="rentalAgreement != null" >
+		    #{rentalAgreement,jdbcType=VARCHAR},
+		  </if>
+		  <if test="stronginsPrompt != null" >
+		    #{stronginsPrompt,jdbcType=VARCHAR},
+		  </if>
+		  <if test="tlinsurancePrompt != null" >
+		    #{tlinsurancePrompt,jdbcType=VARCHAR},
+		  </if>
+		  <if test="inspectionPrompt != null" >
+		    #{inspectionPrompt,jdbcType=VARCHAR},
+		  </if>
+		  <if test="changePrompt != null" >
+		    #{changePrompt,jdbcType=VARCHAR},
+		  </if>
+		  <if test="status != null" >
+		    #{status,jdbcType=VARCHAR},
+		  </if>
+		  <if test="extendProp1 != null" >
+		    #{extendProp1,jdbcType=VARCHAR},
+		  </if>
+		  <if test="extendProp2 != null" >
+		    #{extendProp2,jdbcType=VARCHAR},
+		  </if>
+		  <if test="extendProp3 != null" >
+		    #{extendProp3,jdbcType=VARCHAR},
+		  </if>
+		  <if test="creatorId != null" >
+		    #{creatorId,jdbcType=BIGINT},
+		  </if>
+		  <if test="creator != null" >
+		    #{creator,jdbcType=VARCHAR},
+		  </if>
+		  <if test="createdTime != null" >
+		    #{createdTime,jdbcType=TIMESTAMP}
+		  </if>
+		</trim>
+  </insert>
+
+	<update id="update" parameterType="Map">
+		update t_branchline_car_info
+		    set SUB_STATION = #{subStation,jdbcType=VARCHAR},
+		      DEPUTY_CARD = #{deputyCard,jdbcType=VARCHAR},
+		      CAR_KIND = #{carKind,jdbcType=VARCHAR},
+		      LICENSE_NO = #{licenseNo,jdbcType=VARCHAR},
+		      LICENSE = #{license,jdbcType=VARCHAR},
+		      LICENSE_DATE = #{licenseDate,jdbcType=DATE},
+		      LICENSE_NAME = #{licenseName,jdbcType=VARCHAR},
+		      INSPECTION_DATE = #{inspectionDate,jdbcType=DATE},
+		      NAME = #{name,jdbcType=VARCHAR},
+		      ID_CARD = #{idCard,jdbcType=VARCHAR},
+		      FT_RECEIVE = #{ftReceive,jdbcType=DATE},
+		      CHANGE_DATE = #{changeDate,jdbcType=DATE},
+		      TELEPHONE = #{telephone,jdbcType=VARCHAR},
+		      STRONG_INSDATE = #{strongInsdate,jdbcType=DATE},
+		      TL_INSURANCE = #{tlInsurance,jdbcType=DOUBLE},
+		      TL_INSURANCE_DATE = #{tlInsuranceDate,jdbcType=DATE},
+		      POLICE_PROVE = #{policeProve,jdbcType=VARCHAR},
+		      HOUSEHOLD_COPY = #{householdCopy,jdbcType=VARCHAR},
+		      IDCARD_COPY = #{idcardCopy,jdbcType=VARCHAR},
+		      LICENSE_COPY = #{licenseCopy,jdbcType=VARCHAR},
+		      GUARAN_RESPON = #{guaranRespon,jdbcType=VARCHAR},
+		      GUARAN_INCOME = #{guaranIncome,jdbcType=VARCHAR},
+		      GUARANHOUSE_COPY = #{guaranhouseCopy,jdbcType=VARCHAR},
+		      GUARANID_COPY = #{guaranidCopy,jdbcType=VARCHAR},
+		      DRILICENSE_COPY = #{drilicenseCopy,jdbcType=VARCHAR},
+		      STRONGINS_COPY = #{stronginsCopy,jdbcType=VARCHAR},
+		      COMMERINSU_COPY = #{commerinsuCopy,jdbcType=VARCHAR},
+		      CERTIFICATE = #{certificate,jdbcType=VARCHAR},
+		      AGREE_DATE = #{agreeDate,jdbcType=DATE},
+		      RENTAL_AGREEMENT = #{rentalAgreement,jdbcType=VARCHAR},
+		      STRONGINS_PROMPT = #{stronginsPrompt,jdbcType=VARCHAR},
+		      TLINSURANCE_PROMPT = #{tlinsurancePrompt,jdbcType=VARCHAR},
+		      INSPECTION_PROMPT = #{inspectionPrompt,jdbcType=VARCHAR},
+		      CHANGE_PROMPT = #{changePrompt,jdbcType=VARCHAR},
+		      STATUS = #{status,jdbcType=VARCHAR},
+		      EXTEND_PROP1 = #{extendProp1,jdbcType=VARCHAR},
+		      EXTEND_PROP2 = #{extendProp2,jdbcType=VARCHAR},
+		      EXTEND_PROP3 = #{extendProp3,jdbcType=VARCHAR},
+		      CREATOR_ID = #{creatorId,jdbcType=BIGINT},
+		      CREATOR = #{creator,jdbcType=VARCHAR},
+		      CREATED_TIME = #{createdTime,jdbcType=TIMESTAMP},
+		      LAST_OPERATOR_ID = #{lastOperatorId,jdbcType=BIGINT},
+		      LAST_OPERATOR = #{lastOperator,jdbcType=VARCHAR},
+		      LAST_OPERATED_TIME = #{lastOperatedTime,jdbcType=TIMESTAMP}
+		    where ID = #{id,jdbcType=BIGINT}
+	</update>
+
+	<delete id="deleteByIds">
+		DELETE FROM t_branchline_car_info WHERE ID IN
+		<foreach item="item" index="index" collection="ids" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<select id="getNameValue" parameterType="map" resultType="String">
+		SELECT
+		NAME FROM t_branchline_car_info WHERE NAME LIKE CONCAT('%',#{name},'%')
+		AND SUB_STATION = #{subStation} AND STATUS = '生效'
+	</select>
+
+	<select id="getLiceNo" parameterType="map" resultType="String">
+		SELECT LICENSE_NO FROM t_branchline_car_info WHERE NAME = #{name} AND SUB_STATION = #{subStation} AND STATUS = '生效'
+	</select>
+
+	<update id="updateStatus">
+		UPDATE t_branchline_car_info SET STATUS = #{status} WHERE ID IN
+		<foreach item="item" index="index" collection="ids" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+	<select id="isExist" parameterType="map" resultType="Long">
+		SELECT
+		COUNT(1) FROM t_branchline_car_info WHERE NAME = #{name} AND SUB_STATION =
+		#{subStation}
+	</select>
+
+	<!-- 获取所有的车牌号 -->
+	<select id="getAllLicenseNo" resultMap="branchLineCarInfoResultMap">
+		SELECT ID,CAR_KIND,LICENSE_NO  FROM t_branchline_car_info WHERE `STATUS` != '失效' AND `STATUS` IS NOT NULL
+	</select>
+
+	<select id="exprot2Excel" parameterType="Map" resultMap="branchLineCarInfoResultMap">
+		SELECT 
+			c.ID, 
+			c.SUB_STATION, 
+			c.DEPUTY_CARD, 
+			c.CAR_KIND, 
+			c.LICENSE_NO, 
+			c.LICENSE, 
+			c.LICENSE_DATE, 
+			c.LICENSE_NAME, 
+			c.INSPECTION_DATE, 
+			c.NAME, ID_CARD, 
+			c.FT_RECEIVE, 
+			c.CHANGE_DATE, 
+			c.TELEPHONE, 
+			c.STRONG_INSDATE, 
+			  c.TL_INSURANCE, 
+			  c.TL_INSURANCE_DATE, 
+			  c.POLICE_PROVE, 
+			  c.HOUSEHOLD_COPY, 
+			  c.IDCARD_COPY, 
+			  c.LICENSE_COPY, 
+			  c.GUARAN_RESPON, 
+			  c.GUARAN_INCOME, 
+			  c.GUARANHOUSE_COPY, 
+			  c.GUARANID_COPY, 
+			  c.DRILICENSE_COPY, 
+			  c.STRONGINS_COPY, 
+			  c.COMMERINSU_COPY, 
+			  c.CERTIFICATE, 
+			  c.AGREE_DATE, 
+			  c.RENTAL_AGREEMENT, 
+			  c.STRONGINS_PROMPT, 
+			  c.TLINSURANCE_PROMPT, 
+			  c.INSPECTION_PROMPT, 
+			  c.CHANGE_PROMPT, 
+			  c.STATUS, 
+			  c.EXTEND_PROP1, 
+			  c.EXTEND_PROP2,   
+			  c.CREATOR_ID, 
+			  c.CREATOR, 
+			  c.CREATED_TIME, 
+			  c.LAST_OPERATOR_ID, 
+			  c.LAST_OPERATOR, 
+			  c.LAST_OPERATED_TIME,
+			  o.name as EXTEND_PROP3
+
+		FROM t_branchline_car_info c,m_organization o WHERE c.SUB_STATION = o.ID
+		<if test="subStation != null and subStation != 1 and subStation != 15 and subStation != 16 and subStation != 17 and subStation != 38 and subStation != 50 and subStation != 53">
+			AND SUB_STATION = #{subStation}
+		</if>
+		<if test="name != null">
+			AND NAME LIKE CONCAT('%',#{name},'%')
+		</if>
+		<if test="sortOrder != null">
+			ORDER BY ${sortOrder}
+		</if>
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+
+	<select id="exprotPageData" parameterType="Map" resultType="Map">
+		select MAX(ID) 'MAX',MIN(ID) 'MIN',COUNT(ID) 'COUNT' from
+		t_branchline_car_info WHERE 1=1
+		<if test="subStation != null and subStation != 1 and subStation != 16 and subStation != 53">
+			AND SUB_STATION = #{subStation}
+		</if>
+		<if test="name != null">
+			AND NAME LIKE CONCAT('%',#{name},'%')
+		</if>
+		<if test="sortOrder != null">
+			ORDER BY ${sortOrder}
+		</if>
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+	
+	<!-- 获取车拍 -->
+	<select id="getAllCarInfoBySubId" resultType="BranchLineCarInfo" parameterType="Long" resultMap="branchLineCarInfoResultMap">
+		SELECT LICENSE_NO,NAME FROM t_branchline_car_info where SUB_STATION = #{id,jdbcType=BIGINT} and `STATUS` != '失效' AND `STATUS` IS NOT NULL
+	</select>
+</mapper>

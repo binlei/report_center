@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.frame.server.dao.organization.IOrganizationTypeMapper">
+	<resultMap type="OrganizationType" id="organizationTypeResultMap">
+		<id property="id" column="ID" />
+		<result property="code" column="CODE" />
+		<result property="name" column="NAME" />
+		<result property="description" column="DESCRIPTION" />
+		<result property="enabled" column="ENABLED" />
+
+		<result property="info.creatorId" column="CREATOR_ID" />
+		<result property="info.creator" column="CREATOR" />
+		<result property="info.createdTime" column="CREATED_TIME" />
+		<result property="info.lastOperatorId" column="LAST_OPERATOR_ID" />
+		<result property="info.lastOperator" column="LAST_OPERATOR" />
+		<result property="info.lastOperatedTime" column="LAST_OPERATED_TIME" />
+
+	</resultMap>
+
+
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS M_ORGANIZATION_TYPE;
+			CREATE TABLE M_ORGANIZATION_TYPE
+			(
+				ID BIGINT(20) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+		 		CODE VARCHAR(255) NOT NULL UNIQUE,
+		 		NAME VARCHAR(255),
+		 		DESCRIPTION VARCHAR(255),
+		 		ENABLED BOOLEAN DEFAULT 0,
+				CREATOR_ID BIGINT(20),
+		 		CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+		 		LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX CODE_INDEX(CODE)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+	
+	<select id="load" parameterType="Long" resultType="OrganizationType" resultMap="organizationTypeResultMap">
+        <![CDATA[
+            SELECT * FROM M_ORGANIZATION_TYPE WHERE ID = #{id} 
+        ]]>
+	</select>
+
+	<select id="loadAll" resultType="OrganizationType" resultMap="organizationTypeResultMap">
+        <![CDATA[
+            SELECT * FROM M_ORGANIZATION_TYPE where id = 4
+        ]]>
+	</select>
+
+	<insert id="save" parameterType="OrganizationType" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO M_ORGANIZATION_TYPE (
+			ID,CODE,NAME,DESCRIPTION,CREATOR_ID,CREATOR,CREATED_TIME,
+			ENABLED
+		) VALUES (
+			#{id},#{code},#{name},#{description},#{creatorId},#{creator},#{createdTime},
+			#{enabled}
+		)
+	</insert>
+
+	<update id="update" parameterType="OrganizationType">
+		UPDATE M_ORGANIZATION_TYPE
+		SET 
+			CODE = #{code},
+			NAME = #{name},
+			DESCRIPTION = #{description},
+			LAST_OPERATOR_ID = #{lastOperatorId},
+			LAST_OPERATOR = #{lastOperator},
+			LAST_OPERATED_TIME = #{lastOperatedTime},
+			ENABLED = #{enabled}
+		WHERE ID = #{id}
+	</update>
+
+	<delete id="delete" parameterType="OrganizationType">
+		<![CDATA[
+			DELETE FROM M_ORGANIZATION_TYPE WHERE ID = #{id}
+		]]>
+	</delete>
+
+	<delete id="deleteById" parameterType="Long">
+		<![CDATA[
+			DELETE FROM M_ORGANIZATION_TYPE WHERE ID = #{id}
+		]]>
+	</delete>
+</mapper>

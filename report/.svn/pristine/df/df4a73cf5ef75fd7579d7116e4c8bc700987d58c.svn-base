@@ -1,0 +1,5 @@
+#commentForm {margin-top: 20px}
+form .proStyle { text-align: right;width: 100px; }
+form .proStyle span { color: red; }
+#commentForm select { width: 155px; }
+#file_upload form{ margin-top: 50px; }

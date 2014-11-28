@@ -1,0 +1,112 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.jshuabo</groupId>
+		<artifactId>memory</artifactId>
+		<version>2.0</version>
+	</parent>
+
+	<artifactId>report_center</artifactId>
+	<version>b1_3.0</version>
+	<packaging>war</packaging>
+	<name>report_center Maven Webapp</name>
+	<url>http://maven.apache.org</url>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.jshuabo</groupId>
+			<artifactId>memory-webapp</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
+		
+		<!-- begin oxm -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-oxm</artifactId>
+			<version>${springframework.version}</version>
+		</dependency>
+		<!-- end oxm -->
+
+		<!-- 加入jstl依赖包 -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet.jsp</groupId>
+			<artifactId>jsp-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+		</dependency>
+		
+		<dependency>
+		  <groupId>net.sf.jasperreports</groupId>
+		  <artifactId>jasperreports</artifactId>
+		  <version>5.5.2</version>
+		</dependency>
+
+		<dependency>
+		  <groupId>org.codehaus.xfire</groupId>
+		  <artifactId>bcprov-jdk14</artifactId>
+		  <version>133</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>org.codehaus.groovy</groupId>
+		  <artifactId>groovy-all</artifactId>
+		  <version>2.0.1</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<finalName>report_center</finalName>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>1.6</source>
+						<target>1.6</target>
+						<encoding>UTF-8</encoding>
+					</configuration>
+				</plugin>
+				<plugin>
+	                <groupId>org.apache.maven.plugins</groupId>
+	                <artifactId>maven-war-plugin</artifactId>
+	                <version>2.4</version>
+	                <configuration>
+	                    <warName>${project.artifactId}</warName>
+	                    <webResources>
+	                        <resource>
+	                            <filtering>true</filtering>
+	                            <directory>src/main/webapp</directory>
+	                            <includes>
+	                                <include>**/web.xml</include>
+	                            </includes>
+	                        </resource>
+	                    </webResources>
+	                    <warSourceDirectory>src/main/webapp</warSourceDirectory>
+	                    <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
+	                </configuration>
+	            </plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>

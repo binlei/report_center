@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jshuabo.reportcenter.server.dao.mainline.IDrylineReportMonthlyStatisticsMapper" >
+  
+  <resultMap id="drylineReportMonthlyStatisticsResultMap" type="DrylineReportMonthlyStatistics" >
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="CARCARD" property="carcard" jdbcType="VARCHAR" />
+    <result column="USE_TIME" property="useTime" jdbcType="INTEGER" />
+    <result column="MONTHLY_DEPRECIATION" property="monthlyDepreciation" jdbcType="DOUBLE" />
+    <result column="TOTAL_DEPRECIATION" property="totalDepreciation" jdbcType="DOUBLE" />
+    <result column="GASOLINE_MONEY" property="gasolineMoney" jdbcType="DOUBLE" />
+    <result column="ETC_MONEY" property="etcMoney" jdbcType="DOUBLE" />
+    <result column="MAINTENANCE_MONEY" property="maintenanceMoney" jdbcType="DOUBLE" />
+    <result column="REPAIR_MONEY" property="repairMoney" jdbcType="DOUBLE" />
+    <result column="MONTHLY_COST" property="monthlyCost" jdbcType="DOUBLE" />
+    <result column="TRANSPORT_QUANTITY" property="transportQuantity" jdbcType="DOUBLE" />
+    <result column="TRAVEL_MILEAGE" property="travelMileage" jdbcType="DOUBLE" />
+    <result column="CONSUMPTION_QUANTITY" property="consumptionQuantity" jdbcType="DOUBLE" />
+    <result column="HUNDRED_KILOMETER_FUEL" property="hundredKilometerFuel" jdbcType="DOUBLE" />
+    <result column="HUNDRED_KILOMETER_COST" property="hundredKilometerCost" jdbcType="DOUBLE" />
+    <result column="TRANSPORT_COST" property="transportCost" jdbcType="DOUBLE" />
+    <result column="EXTEND_PROP1" property="extendProp1" jdbcType="VARCHAR" />
+    <result column="EXTEND_PROP2" property="extendProp2" jdbcType="VARCHAR" />
+    <result column="EXTEND_PROP3" property="extendProp3" jdbcType="VARCHAR" />
+    
+  </resultMap>
+
+  <select id="page" resultMap="drylineReportMonthlyStatisticsResultMap" parameterType="Map" >
+		SELECT
+				car.ID AS id,
+				car.CARCARD,
+				MONTH (SYSDATE()) - MONTH (car.DATE) AS 'useTime',
+				car.OLDMONEY AS 'monthlyDepreciation',
+				'useTime' * car.OLDMONEY AS 'totalDepreciation',
+				SUM(transfer.MONEY) AS 'gasolineMoney',
+				SUM(etc.ACTUAL_AMOUNT) AS 'etcMoney',
+				SUM(
+					maintenan.MAINTENANCE_MONEY
+				) AS 'maintenanceMoney',
+				SUM(maintenan.repair_money) AS 'repairMoney',
+				(
+					'totalDepreciation' + 'gasolineMoney' + 'etcMoney' + 'maintenanceMoney' + 'repairMoney'
+				) AS 'monthlyCost',
+				outcar.QUANTITY AS 'transportQuantity',
+				outcar.MILEAGE AS 'travelMileage',
+				transfer.QUANTITY AS 'consumptionQuantity',
+				(outcar.QUANTITY / outcar.MILEAGE * 100)  AS 'hundredKilometerFuel',
+				('monthlyCost' / outcar.MILEAGE * 100) AS 'hundredKilometerCost',
+				('monthlyCost' / outcar.QUANTITY) AS 'transportCost'
+			FROM
+				t_dryline_car_record car
+					LEFT JOIN t_dryline_transfer_record transfer ON car.CARCARD = transfer.CARCARD
+					LEFT JOIN t_dryline_etc_consume_record etc ON car.CARCARD = etc.CARCARD
+					LEFT JOIN t_dryline_maintenance_record maintenan ON car.ID = maintenan.CARCRAD_ID
+					LEFT JOIN t_dryline_out_car_record outcar ON car.ID = outcar.CARCARD_ID
+			WHERE 1 = 1 
+				<if test="startTime != null">
+					AND maintenan.MAINTENANCE_DATE &gt;= CONCAT(#{startTime},' 00:00:00')
+				</if>
+				<if test="endTime != null">
+					AND maintenan.MAINTENANCE_DATE &lt;= CONCAT(#{endTime},' 23:59:59') 
+				</if>
+				<if test="carcard != null">
+					AND car.CARCARD = #{carcard}
+				</if>
+			GROUP BY
+				car.CARCARD
+			<if test="sortOrder != null"> ORDER BY ${sortOrder} </if>
+			<if test="offset != null"> LIMIT #{offset}, </if>
+			<if test="rows != null"> #{rows} </if>
+  </select>
+  
+   <select id="total" resultType="Long" parameterType="Map" >
+		SELECT COUNT(1) FROM 
+		(
+			SELECT
+				car.ID AS id,
+				car.CARCARD,
+				MONTH (SYSDATE()) - MONTH (car.DATE) AS 'useTime',
+				car.OLDMONEY AS 'monthlyDepreciation',
+				'useTime' * car.OLDMONEY AS 'totalDepreciation',
+				SUM(transfer.MONEY) AS 'gasolineMoney',
+				SUM(etc.ACTUAL_AMOUNT) AS 'etcMoney',
+				SUM(
+					maintenan.MAINTENANCE_MONEY
+				) AS 'maintenanceMoney',
+				SUM(maintenan.repair_money) AS 'repairMoney',
+				(
+					'totalDepreciation' + 'gasolineMoney' + 'etcMoney' + 'maintenanceMoney' + 'repairMoney'
+				) AS 'monthlyCost',
+				outcar.QUANTITY AS 'transportQuantity',
+				outcar.MILEAGE AS 'travelMileage',
+				transfer.QUANTITY AS 'consumptionQuantity',
+				(outcar.QUANTITY / outcar.MILEAGE * 100)  AS 'hundredKilometerFuel',
+				('monthlyCost' / outcar.MILEAGE * 100) AS 'hundredKilometerCost',
+				('monthlyCost' / outcar.QUANTITY) AS 'transportCost'
+			FROM
+				t_dryline_car_record car
+			LEFT JOIN t_dryline_transfer_record transfer ON car.CARCARD = transfer.CARCARD
+			LEFT JOIN t_dryline_etc_consume_record etc ON car.CARCARD = etc.CARCARD
+			LEFT JOIN t_dryline_maintenance_record maintenan ON car.ID = maintenan.CARCRAD_ID
+			LEFT JOIN t_dryline_out_car_record outcar ON car.ID = outcar.CARCARD_ID
+			WHERE 1 = 1 
+				<if test="startTime != null">
+					AND maintenan.MAINTENANCE_DATE &gt;= CONCAT(#{startTime},' 00:00:00')
+				</if>
+				<if test="endTime != null">
+					AND maintenan.MAINTENANCE_DATE &lt;= CONCAT(#{endTime},' 23:59:59') 
+				</if>
+				<if test="carcard != null">
+					AND car.CARCARD = #{carcard}
+				</if>
+			GROUP BY
+				car.CARCARD 
+			<if test="sortOrder != null"> ORDER BY ${sortOrder} </if>
+			<if test="offset != null"> LIMIT #{offset}, </if>
+			<if test="rows != null"> #{rows} </if>
+		) AS t
+  </select>
+  
+  <sql id="sql">
+  		SELECT
+			car.CARCARD,
+			MONTH (SYSDATE()) - MONTH (car.DATE) AS '已使用时间(月)',
+			car.OLDMONEY AS '每月折旧金额',
+			(
+				(
+					MONTH (SYSDATE()) - MONTH (car.DATE)
+				) * car.OILCARD
+			) AS 'old',
+			SUM(transfer.MONEY) AS '汽油金额',
+			SUM(etc.ACTUAL_AMOUNT) AS 'ETC 消费金额',
+			SUM(
+				maintenan.MAINTENANCE_MONEY
+			) AS '保养金额',
+			SUM(maintenan.repair_money) AS '维修金额',
+			(
+				('old' * car.OILCARD) + SUM(transfer.MONEY) + SUM(etc.ACTUAL_AMOUNT) + SUM(
+					maintenan.MAINTENANCE_MONEY
+				) + SUM(maintenan.repair_money)
+			) AS 'total',
+			outcar.QUANTITY AS '运输台数',
+			outcar.MILEAGE AS '行驶里程',
+			transfer.QUANTITY AS '消费数量（出）',
+			outcar.MILEAGE / transfer.QUANTITY * 100 AS '百公里油耗',
+			'total' / outcar.MILEAGE * 100 AS '百公里费用',
+			'total' / outcar.QUANTITY '单台干线运输成本'
+		FROM
+			t_dryline_car_record car
+		LEFT JOIN t_dryline_transfer_record transfer ON car.ID = transfer.CARCARD_ID
+		LEFT JOIN t_dryline_etc_consume_record etc ON car.ID = etc.CARCARD_ID
+		LEFT JOIN t_dryline_maintenance_record maintenan ON car.ID = maintenan.CARCRAD_ID
+		LEFT JOIN t_dryline_out_car_record outcar ON car.ID = outcar.CARCARD_ID
+		WHERE
+			1 = 1
+		GROUP BY
+			car.CARCARD
+  </sql>
+  
+</mapper>

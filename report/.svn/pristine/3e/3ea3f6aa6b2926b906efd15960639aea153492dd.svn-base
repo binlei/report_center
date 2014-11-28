@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.jshuabo.reportcenter.server.dao.automobile.IRechargeRecordDataMapper">
+	<resultMap type="RechargeRecordData" id="rechargeRecordDataResultMap">
+		<id property="id" column="ID" />
+		<result property="rechargeDate" column="RECHARGE_DATE" />
+		<result property="rechargeMoney" column="RECHARGE_MONEY" />
+		<result property="rechargeName" column="RECHARGE_NAME" />
+		<result property="confirmed" column="CONFIRMED" />
+		<result property="rechargeRecordId" column="RECHARGE_RECORDID" />
+		<result property="predistributionDate" column="PREDISTRIBUTION_DATE" />
+		<result property="subStation" column="SUB_STATION" />
+		<result property="name" column="NAME" />
+		<result property="cardNo" column="CARDNO" />
+		<result property="predistributionMoney" column="PREDISTRIBUTION_MONEY" />
+		<result property="earlierPeriod" column="EARLIER_PERIOD" />
+		<result property="mainBalance" column="MAIN_BALANCE" />
+		<result property="invoiceDate" column="INVOICE_DATE" />
+		<result property="invoiceMoney" column="INVOICE_MONEY" />
+		<result property="invoiceNO" column="INVOICE_NO" />
+		<result property="unbilled" column="UNBILLED" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+		<result property="extendProp3" column="EXTEND_PROP3" />
+		<result property="creatorId" column="CREATOR_ID" />
+		<result property="creator" column="CREATOR" />
+		<result property="createdTime" column="CREATED_TIME" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_RECHARGERECORD_DATA;
+			CREATE TABLE T_RECHARGERECORD_DATA
+			(
+			    ID INT(40) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			    RECHARGE_DATE DATE,
+				RECHARGE_MONEY DOUBLE,
+				RECHARGE_NAME VARCHAR(20),
+				CONFIRMED VARCHAR(100),
+				RECHARGE_RECORDID VARCHAR(40),
+				PREDISTRIBUTION_DATE DATE,
+				SUB_STATION VARCHAR(20),
+				NAME VARCHAR(20),
+				CARDNO VARCHAR(40),
+				PREDISTRIBUTION_MONEY DOUBLE,
+				EARLIER_PERIOD VARCHAR(40),
+				MAIN_BALANCE DOUBLE,
+				INVOICE_DATE DATE,
+				INVOICE_MONEY DOUBLE,
+				INVOICE_NO VARCHAR(40),
+				UNBILLED DOUBLE,
+				EXTEND_PROP1 VARCHAR(100),
+				EXTEND_PROP2 VARCHAR(100),
+				EXTEND_PROP3 VARCHAR(100),
+			    CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX RECHARGE_NAME(RECHARGE_NAME)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="page" parameterType="map" resultType="RechargeRecordData"
+		resultMap="rechargeRecordDataResultMap">
+		SELECT A.ID, A.RECHARGE_DATE, ROUND(A.RECHARGE_MONEY, 2) AS
+		RECHARGE_MONEY, A.RECHARGE_NAME, A.CONFIRMED, A.RECHARGE_RECORDID,
+		A.PREDISTRIBUTION_DATE,
+		A.SUB_STATION, A.NAME, A.CARDNO, ROUND(A.PREDISTRIBUTION_MONEY, 2) AS
+		PREDISTRIBUTION_MONEY, A.EARLIER_PERIOD, ROUND(C.MAIN_BALANCE, 2) AS
+		MAIN_BALANCE, A.INVOICE_DATE,
+		ROUND(A.INVOICE_MONEY, 2) AS INVOICE_MONEY, A.INVOICE_NO, ROUND(B.UNBILLED, 2) AS UNBILLED
+		FROM T_RECHARGERECORD_DATA A
+		LEFT JOIN (SELECT MAX(ID) AS ID,(SUM(RECHARGE_MONEY)-SUM(INVOICE_MONEY))
+		AS UNBILLED FROM T_RECHARGERECORD_DATA WHERE INVOICE_MONEY IS NOT
+		NULL) B ON A.ID = B.ID
+		LEFT JOIN (SELECT MAX(ID) AS
+		ID,(SUM(RECHARGE_MONEY)-SUM(PREDISTRIBUTION_MONEY)) AS MAIN_BALANCE
+		FROM T_RECHARGERECORD_DATA) C ON A.ID = C.ID WHERE 1=1
+		<if test="rechargeName != null">
+			AND RECHARGE_NAME = #{rechargeName}
+		</if>
+		<if test="sortOrder != null">
+			ORDER BY ${sortOrder}
+		</if>
+		<if test="offset != null">
+			LIMIT #{offset},
+		</if>
+		<if test="rows != null">
+			#{rows}
+		</if>
+	</select>
+
+	<select id="getMainBalance" resultType="String">
+		SELECT
+		(SUM(RECHARGE_MONEY)-SUM(PREDISTRIBUTION_MONEY)) AS MAIN_BALANCE FROM
+		T_RECHARGERECORD_DATA
+	</select>
+
+	<select id="getUnbilled" resultType="String">
+		SELECT
+		(SUM(RECHARGE_MONEY)-SUM(INVOICE_MONEY)) AS UNBILLED FROM
+		T_RECHARGERECORD_DATA WHERE INVOICE_MONEY IS NOT NULL
+	</select>
+
+	<select id="total" parameterType="map" resultType="Long">
+		SELECT COUNT(1) FROM T_RECHARGERECORD_DATA WHERE 1=1
+		<if test="rechargeName != null">
+			AND RECHARGE_NAME = #{rechargeName}
+		</if>
+	</select>
+
+	<insert id="save">
+		INSERT INTO T_RECHARGERECORD_DATA (
+		RECHARGE_DATE, RECHARGE_MONEY, RECHARGE_NAME, CONFIRMED, INVOICE_DATE,
+		INVOICE_MONEY, INVOICE_NO,
+		CREATOR_ID, CREATOR, CREATED_TIME
+		) VALUES
+		(#{rechargeDate}, #{rechargeMoney}, #{rechargeName}, #{confirmed}, #{invoiceDate},
+		#{invoiceMoney}, #{invoiceNO}, #{creatorId}, #{creator},
+		#{createdTime})
+	</insert>
+
+	<delete id="deleteById" parameterType="String">
+		DELETE FROM T_RECHARGERECORD_DATA WHERE ID IN
+		<foreach item="item" index="index" collection="list" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+		OR RECHARGE_RECORDID IN
+		<foreach item="item" index="index" collection="list" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<insert id="saveViceCard" parameterType="map">
+		INSERT INTO T_RECHARGERECORD_DATA (
+		PREDISTRIBUTION_DATE,
+		SUB_STATION,
+		NAME,
+		CARDNO,
+		PREDISTRIBUTION_MONEY,
+		EARLIER_PERIOD,
+		CREATOR_ID,
+		CREATOR,
+		CREATED_TIME
+		) VALUES
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(#{item.predistributionDate},#{item.subStation},#{item.name},#{item.cardNo},
+			#{item.predistributionMoney},#{item.earlierPeriod},#{item.creatorId},#{item.creator},#{item.createdTime})
+		</foreach>
+	</insert>
+
+	<select id="exprot2Excel" parameterType="Map" resultMap="rechargeRecordDataResultMap">
+		SELECT A.ID, A.RECHARGE_DATE, ROUND(A.RECHARGE_MONEY, 2) AS
+		RECHARGE_MONEY, A.RECHARGE_NAME, A.CONFIRMED, A.RECHARGE_RECORDID,
+		A.PREDISTRIBUTION_DATE,
+		A.SUB_STATION, A.NAME, A.CARDNO, ROUND(A.PREDISTRIBUTION_MONEY, 2) AS
+		PREDISTRIBUTION_MONEY, A.EARLIER_PERIOD, ROUND(C.MAIN_BALANCE, 2) AS
+		MAIN_BALANCE, A.INVOICE_DATE,
+		ROUND(A.INVOICE_MONEY, 2) AS INVOICE_MONEY, A.INVOICE_NO, ROUND(B.UNBILLED, 2) AS UNBILLED
+		FROM T_RECHARGERECORD_DATA A
+		LEFT JOIN (SELECT MAX(ID) AS ID,(SUM(RECHARGE_MONEY)-SUM(INVOICE_MONEY))
+		AS UNBILLED FROM T_RECHARGERECORD_DATA WHERE INVOICE_MONEY IS NOT
+		NULL) B ON A.ID = B.ID
+		LEFT JOIN (SELECT MAX(ID) AS
+		ID,(SUM(RECHARGE_MONEY)-SUM(PREDISTRIBUTION_MONEY)) AS MAIN_BALANCE
+		FROM T_RECHARGERECORD_DATA) C ON A.ID = C.ID WHERE 1=1
+		<if test="rechargeName != null">
+			AND RECHARGE_NAME = #{rechargeName}
+		</if>
+		<if test="sortOrder != null">
+			ORDER BY ${sortOrder}
+		</if>
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+	<select id="exprotPageData" parameterType="Map" resultType="Map">
+		select MAX(ID) 'MAX',MIN(ID) 'MIN',COUNT(ID) 'COUNT' from
+		T_DRAWOUTRECORD_DATA WHERE 1=1
+		<if test="rechargeName != null">
+			AND RECHARGE_NAME = #{rechargeName}
+		</if>
+		<if test="sortOrder != null">
+			ORDER BY ${sortOrder}
+		</if>
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+</mapper>

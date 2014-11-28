@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jshuabo.reportcenter.server.dao.mainline.IDryLineMaincardMapper" >
+  <resultMap id="dryLineMaincardResultMap" type="DryLineMaincard" >
+    <id column="ID" property="id" jdbcType="BIGINT" />
+    <result column="MAIN_CARD" property="mainCard" jdbcType="VARCHAR" />
+    <result column="BALANCE" property="balance" jdbcType="DOUBLE" />
+    <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+    <result column="EXTEND_PROP1" property="extendProp1" jdbcType="VARCHAR" />
+    <result column="EXTEND_PROP2" property="extendProp2" jdbcType="VARCHAR" />
+    <result column="EXTEND_PROP3" property="extendProp3" jdbcType="VARCHAR" />
+    
+    <result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+	<result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+	<result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+	<result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+	<result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+	<result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+	
+	<collection property="dryLineVicecards" ofType="DryLineVicecard" column="MAIN_CARD_ID" foreignColumn="ID"
+	 		select="com.jshuabo.reportcenter.server.dao.mainline.IDryLineVicecardMapper.selectByMaincardId">
+		<id column="ID" property="id" jdbcType="BIGINT" /> 		
+		<result column="CAR_CARD" property="carCard" jdbcType="VARCHAR" />
+   		<result column="BALANCE" property="balance" jdbcType="DOUBLE" />
+	</collection>
+  </resultMap>
+    
+  <sql id="Base_Column_List" >
+    ID, MAIN_CARD, BALANCE, DESCRIPTION, EXTEND_PROP1, EXTEND_PROP2, EXTEND_PROP3, CREATOR_ID, 
+    CREATOR, CREATED_TIME, LAST_OPERATOR_ID, LAST_OPERATOR, LAST_OPERATED_TIME
+  </sql>
+  
+  <select id="page" parameterType="Map" resultMap="dryLineMaincardResultMap">
+		select <include refid="Base_Column_List" /> 
+			from t_dryline_maincard where 1 = 1
+					<if test="maincard != null">
+						AND MAIN_CARD = #{maincard}
+					</if>
+					<if test="sortOrder != null">
+						ORDER BY ${sortOrder}
+					</if>
+					<if test="offset != null">
+						LIMIT #{offset}, #{rows}
+					</if>
+	</select>
+
+	<select id="total" parameterType="Map" resultType="java.lang.Long">
+		select count(1) from t_dryline_maincard where 1 = 1 
+			<if test="maincard != null">
+				AND MAIN_CARD = #{maincard}
+			</if>
+	</select>
+ 
+  <select id="selectById" resultMap="dryLineMaincardResultMap" parameterType="java.lang.Long" >
+    select  <include refid="Base_Column_List" />
+   		 from t_dryline_maincard
+    where ID = #{id,jdbcType=BIGINT}
+  </select>
+  
+  <select id="getAllMaincard" resultMap="dryLineMaincardResultMap" >
+    select  ID, MAIN_CARD from t_dryline_maincard
+  </select>
+  
+  <select id="getAllMaincardBalance" resultMap="dryLineMaincardResultMap" >
+    select  MAIN_CARD,BALANCE from t_dryline_maincard
+  </select>
+  
+  <delete id="deleteByIds" parameterType="DryLineMaincard" >
+    delete from t_dryline_maincard WHERE ID IN
+		<foreach item="item" index="index" collection="ids" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+  </delete>
+  
+  <insert id="insert" parameterType="DryLineMaincard" >
+    insert into t_dryline_maincard
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="mainCard != null" >
+        MAIN_CARD,
+      </if>
+      <if test="balance != null" >
+        BALANCE,
+      </if>
+      <if test="description != null" >
+        DESCRIPTION,
+      </if>
+      <if test="extendProp1 != null" >
+        EXTEND_PROP1,
+      </if>
+      <if test="extendProp2 != null" >
+        EXTEND_PROP2,
+      </if>
+      <if test="extendProp3 != null" >
+        EXTEND_PROP3,
+      </if>
+        CREATOR_ID,
+        CREATOR,
+        CREATED_TIME 
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="mainCard != null" >
+        #{mainCard,jdbcType=VARCHAR},
+      </if>
+      <if test="balance != null" >
+        #{balance,jdbcType=DOUBLE},
+      </if>
+      <if test="description != null" >
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="extendProp1 != null" >
+        #{extendProp1,jdbcType=VARCHAR},
+      </if>
+      <if test="extendProp2 != null" >
+        #{extendProp2,jdbcType=VARCHAR},
+      </if>
+      <if test="extendProp3 != null" >
+        #{extendProp3,jdbcType=VARCHAR},
+      </if>
+        #{creatorId,jdbcType=BIGINT},
+        #{creator,jdbcType=VARCHAR},
+        #{createdTime,jdbcType=TIMESTAMP}
+    </trim>
+  </insert>
+  
+  <update id="update" parameterType="map" >
+    update t_dryline_maincard
+    set ID = #{record.id,jdbcType=BIGINT},
+      MAIN_CARD = #{record.mainCard,jdbcType=VARCHAR},
+      BALANCE = #{record.balance,jdbcType=DOUBLE},
+      DESCRIPTION = #{record.description,jdbcType=VARCHAR},
+      EXTEND_PROP1 = #{record.extendProp1,jdbcType=VARCHAR},
+      EXTEND_PROP2 = #{record.extendProp2,jdbcType=VARCHAR},
+      EXTEND_PROP3 = #{record.extendProp3,jdbcType=VARCHAR},
+      CREATOR_ID = #{record.creatorId,jdbcType=BIGINT},
+      CREATOR = #{record.creator,jdbcType=VARCHAR},
+      CREATED_TIME = #{record.createdTime,jdbcType=TIMESTAMP},
+      LAST_OPERATOR_ID = #{record.lastOperatorId,jdbcType=BIGINT},
+      LAST_OPERATOR = #{record.lastOperator,jdbcType=VARCHAR},
+      LAST_OPERATED_TIME = #{record.lastOperatedTime,jdbcType=TIMESTAMP} 
+    where ID = #{id,jdbcType=BIGINT}
+  </update>
+  
+</mapper>

@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.jshuabo.reportcenter.server.dao.mainline.IDryLineRechargeRecordMapper">
+	<resultMap type="DryLineRechargeRecord" id="dryLineRechargeRecordResultMap">
+	    <id column="ID" property="id" jdbcType="BIGINT" />
+	    <result column="CARD" property="card" jdbcType="VARCHAR" />
+	    <result column="RECHARGE_DATE" property="rechargeDate" jdbcType="DATE" />
+	    <result column="RECHARGE_MONEY" property="rechargeMoney" jdbcType="DOUBLE" />
+	    <result column="RECHARGE_NAME" property="rechargeName" jdbcType="VARCHAR" />
+	    <result column="CONFIRMED" property="confirmed" jdbcType="VARCHAR" />
+	    <result column="TRANSFER_DATE" property="transferDate" jdbcType="DATE" />
+	    <result column="TRANSFER_MONEY" property="transferMoney" jdbcType="DOUBLE" />
+	    <result column="MAIN_BALANCE" property="mainBalance" jdbcType="DOUBLE" />
+	    <result column="INVOICE_DATE" property="invoiceDate" jdbcType="DATE" />
+	    <result column="INVOICE_MONEY" property="invoiceMoney" jdbcType="DOUBLE" />
+	    <result column="INVOICE_NO" property="invoiceNo" jdbcType="VARCHAR" />
+	    <result column="UNBILLED" property="unbilled" jdbcType="DOUBLE" />
+	    <result column="EXTEND_PROP1" property="extendProp1" jdbcType="VARCHAR" />
+	    <result column="EXTEND_PROP2" property="extendProp2" jdbcType="VARCHAR" />
+	    <result column="EXTEND_PROP3" property="extendProp3" jdbcType="VARCHAR" />
+		<result property="info.creatorId" column="CREATOR_ID" />
+		<result property="info.creator" column="CREATOR" />
+		<result property="info.createdTime" column="CREATED_TIME" />
+		
+		<collection property="viceCard" column="CARD" ofType="DryLineTransferRecord"  
+				select="com.jshuabo.reportcenter.server.dao.mainline.IDryLineTransferRecordMapper.selectViceCards" >
+			<id column="ID" property="id" jdbcType="BIGINT" />
+			<result column="CARCARD" property="carcard" jdbcType="VARCHAR" />
+			<result column="OIL_CARD_NO" property="oilCardNo" jdbcType="VARCHAR" />
+			<result column="TRANSFER_DATE" property="transferDate" jdbcType="TIMESTAMP" />
+			<result column="TRANSFER_MONEY" property="transferMoney" jdbcType="DOUBLE" />
+			<result column="TRANSFER_ADDRESS" property="transferAddress" jdbcType="VARCHAR" />
+			<result column="DATE" property="date" jdbcType="TIMESTAMP" />
+			<result column="KIND" property="kind" jdbcType="VARCHAR" />
+			<result column="QUANTITY" property="quantity" jdbcType="DOUBLE" />
+			<result column="PRICE" property="price" jdbcType="DOUBLE" />
+			<result column="MONEY" property="money" jdbcType="DOUBLE" />
+			<result column="UNBILLED" property="unbilled" jdbcType="DOUBLE" />
+		</collection>
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		ID, CARD, RECHARGE_DATE, RECHARGE_MONEY, RECHARGE_NAME, CONFIRMED,
+		TRANSFER_DATE, TRANSFER_MONEY, MAIN_BALANCE, INVOICE_DATE, INVOICE_MONEY, INVOICE_NO, UNBILLED,
+		EXTEND_PROP1, EXTEND_PROP2, EXTEND_PROP3, CREATOR_ID, CREATOR,
+		CREATED_TIME, LAST_OPERATOR_ID,
+		LAST_OPERATOR, LAST_OPERATED_TIME
+	</sql>
+
+	<sql id="createView">
+		<![CDATA[
+			CREATE OR REPLACE VIEW V_MAIN_RECHARGERECORD_DATA AS
+				SELECT A.ID, A.CARD, A.RECHARGE_DATE, A.RECHARGE_MONEY, A.RECHARGE_NAME, A.CONFIRMED, A.TRANSFER_DATE, A.TRANSFER_MONEY,
+            	A.MAIN_BALANCE, A.INVOICE_DATE, A.INVOICE_MONEY, A.INVOICE_NO, A.UNBILLED FROM t_dryline_recharge_record A 
+				UNION ALL 
+				SELECT '','',NULL,NULL,'','',C.TRANSFER_DATE ,C.TRANSFER_MONEY,'',NULL,NULL,'','' FROM T_TRANSFERRECORD_DATA C;
+		]]>
+	</sql>
+
+	<select id="page" parameterType="map" resultType="DryLineRechargeRecord" resultMap="dryLineRechargeRecordResultMap">
+		SELECT  <include refid="Base_Column_List"/> FROM t_dryline_recharge_record WHERE 1 = 1
+			<if test="card != null">
+				AND CARD LIKE CONCAT('%',#{card},'%')
+			</if>
+			<if test="beginTime != null">
+				AND RECHARGE_DATE &gt;= #{beginTime}
+			</if>
+			<if test="endTime != null">
+				AND RECHARGE_DATE &lt;= #{endTime}
+			</if>
+			<if test="sortOrder != null">
+				ORDER BY ${sortOrder}
+			</if>
+			<if test="offset != null">
+				LIMIT #{offset},
+			</if>
+			<if test="rows != null">
+				#{rows}
+			</if>
+	</select>
+
+	<select id="getBalance" resultType="String">
+		SELECT
+		(SUM(RECHARGE_MONEY)-SUM(TRANSFER_MONEY)) AS MAIN_BALANCE FROM
+		V_MAIN_RECHARGERECORD_DATA
+	</select>
+
+	<select id="getUnbilled" resultType="String">
+		SELECT
+		(SUM(RECHARGE_MONEY)-SUM(INVOICE_MONEY)) AS UNBILLED FROM
+		V_MAIN_RECHARGERECORD_DATA WHERE INVOICE_MONEY IS NOT NULL
+	</select>
+
+	<select id="total" parameterType="map" resultType="Long">
+		SELECT COUNT(1) FROM t_dryline_recharge_record WHERE 1 = 1
+		<if test="beginTime != null">
+			AND RECHARGE_DATE &gt;= #{beginTime}
+		</if>
+		<if test="endTime != null">
+			AND RECHARGE_DATE &lt;= #{endTime}
+		</if>
+		<if test="card != null">
+			AND CARD LIKE CONCAT('%',#{card},'%')
+		</if>
+	</select>
+
+	<insert id="insert" parameterType="Map">
+		insert into t_dryline_recharge_record
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="card != null">
+				CARD,
+			</if>
+			<if test="rechargeDate != null">
+				RECHARGE_DATE,
+			</if>
+			<if test="rechargeMoney != null">
+				RECHARGE_MONEY,
+			</if>
+			<if test="rechargeName != null">
+				RECHARGE_NAME,
+			</if>
+			<if test="confirmed != null">
+				CONFIRMED,
+			</if>
+			<if test="transferDate != null">
+				TRANSFER_DATE,
+			</if>
+			<if test="transferMoney != null">
+				TRANSFER_MONEY,
+			</if>
+			<if test="mainBalance != null">
+				MAIN_BALANCE,
+			</if>
+			<if test="invoiceDate != null">
+				INVOICE_DATE,
+			</if>
+			<if test="invoiceMoney != null">
+				INVOICE_MONEY,
+			</if>
+			<if test="invoiceNo != null">
+				INVOICE_NO,
+			</if>
+			<if test="unbilled != null">
+				UNBILLED,
+			</if>
+			<if test="extendProp1 != null">
+				EXTEND_PROP1,
+			</if>
+			<if test="extendProp2 != null">
+				EXTEND_PROP2,
+			</if>
+			<if test="extendProp3 != null">
+				EXTEND_PROP3,
+			</if>
+				CREATOR_ID,
+				CREATOR,
+				CREATED_TIME
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="card != null">
+				#{card,jdbcType=VARCHAR},
+			</if>
+			<if test="rechargeDate != null">
+				#{rechargeDate,jdbcType=DATE},
+			</if>
+			<if test="rechargeMoney != null">
+				#{rechargeMoney,jdbcType=DOUBLE},
+			</if>
+			<if test="rechargeName != null">
+				#{rechargeName,jdbcType=VARCHAR},
+			</if>
+			<if test="confirmed != null">
+				#{confirmed,jdbcType=VARCHAR},
+			</if>
+			<if test="transferDate != null">
+				#{transferDate,jdbcType=DATE},
+			</if>
+			<if test="transferMoney != null">
+				#{transferMoney,jdbcType=DOUBLE},
+			</if>
+			<if test="mainBalance != null">
+				#{mainBalance,jdbcType=DOUBLE},
+			</if>
+			<if test="invoiceDate != null">
+				#{invoiceDate,jdbcType=DATE},
+			</if>
+			<if test="invoiceMoney != null">
+				#{invoiceMoney,jdbcType=DOUBLE},
+			</if>
+			<if test="invoiceNo != null">
+				#{invoiceNo,jdbcType=VARCHAR},
+			</if>
+			<if test="unbilled != null">
+				#{unbilled,jdbcType=DOUBLE},
+			</if>
+			<if test="extendProp1 != null">
+				#{extendProp1,jdbcType=VARCHAR},
+			</if>
+			<if test="extendProp2 != null">
+				#{extendProp2,jdbcType=VARCHAR},
+			</if>
+			<if test="extendProp3 != null">
+				#{extendProp3,jdbcType=VARCHAR},
+			</if>
+				#{creatorId,jdbcType=BIGINT},
+				#{creator,jdbcType=VARCHAR},
+				#{createdTime,jdbcType=TIMESTAMP}
+		</trim>
+	</insert>
+
+	<delete id="deleteByIds" parameterType="String">
+		DELETE FROM t_dryline_recharge_record WHERE ID IN
+		<foreach item="item" index="index" collection="ids" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	 <update id="update" parameterType="Map" >
+	    update t_dryline_recharge_record
+	    set CARD = #{card,jdbcType=VARCHAR},
+	      RECHARGE_DATE = #{rechargeDate,jdbcType=DATE},
+	      RECHARGE_MONEY = #{rechargeMoney,jdbcType=DOUBLE},
+	      RECHARGE_NAME = #{rechargeName,jdbcType=VARCHAR},
+	      CONFIRMED = #{confirmed,jdbcType=VARCHAR},
+	      TRANSFER_DATE = #{transferDate,jdbcType=DATE},
+	      TRANSFER_MONEY = #{transferMoney,jdbcType=DOUBLE},
+	      MAIN_BALANCE = #{mainBalance,jdbcType=DOUBLE},
+	      INVOICE_DATE = #{invoiceDate,jdbcType=DATE},
+	      INVOICE_MONEY = #{invoiceMoney,jdbcType=DOUBLE},
+	      INVOICE_NO = #{invoiceNo,jdbcType=VARCHAR},
+	      UNBILLED = #{unbilled,jdbcType=DOUBLE},
+	      EXTEND_PROP1 = #{extendProp1,jdbcType=VARCHAR},
+	      EXTEND_PROP2 = #{extendProp2,jdbcType=VARCHAR},
+	      EXTEND_PROP3 = #{extendProp3,jdbcType=VARCHAR},
+	      CREATOR_ID = #{creatorId,jdbcType=BIGINT},
+	      CREATOR = #{creator,jdbcType=VARCHAR},
+	      CREATED_TIME = #{createdTime,jdbcType=TIMESTAMP},
+	      LAST_OPERATOR_ID = #{lastOperatorId,jdbcType=BIGINT},
+	      LAST_OPERATOR = #{lastOperator,jdbcType=VARCHAR},
+	      LAST_OPERATED_TIME = #{lastOperatedTime,jdbcType=TIMESTAMP}
+	    where ID = #{id,jdbcType=BIGINT}
+	  </update>
+
+	<select id="selectById" resultMap="dryLineRechargeRecordResultMap" parameterType="java.lang.Long">
+		select * from t_dryline_recharge_record where ID = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<select id="selectByCard" resultMap="dryLineRechargeRecordResultMap" parameterType="java.lang.Long">
+		select * from t_dryline_recharge_record where CARD = #{card,jdbcType=VARCHAR}
+	</select>
+
+</mapper>

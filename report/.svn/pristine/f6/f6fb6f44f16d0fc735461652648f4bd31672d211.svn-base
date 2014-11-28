@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.payment.IInvoiceDataMapper">
+	<resultMap type="InvoiceData" id="invoiceDataResultMap">
+		<id property="id" column="ID" />
+		<result property="settleNo" column="SETTLE_NO" />
+		<result property="invoiceDate" column="INVOICE_DATE" />
+		<result property="invoiceNo1" column="INVOICE_NO1" />
+		<result property="tax1" column="TAX1" />
+		<result property="tax2" column="TAX2" />
+		<result property="title" column="TITLE" />
+		<result property="invoiceMoney1" column="INVOICE_MONEY1" />
+		<result property="invoiceNo2" column="INVOICE_NO2" />
+		<result property="invoiceMoney2" column="INVOICE_MONEY2" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+		<result property="creatorId" column="CREATOR_ID" />
+		<result property="creator" column="CREATOR" />
+		<result property="createdTime" column="CREATED_TIME" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_INVOICE_DATA;
+			CREATE TABLE T_INVOICE_DATA
+			(
+				ID INT(40) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				SETTLE_NO VARCHAR(40) NOT NULL,
+				INVOICE_DATE DATE,
+				INVOICE_NO1 VARCHAR(40),
+				TAX1 VARCHAR(40),
+				TAX2 VARCHAR(40),
+				TITLE VARCHAR(200),
+				INVOICE_MONEY1 DOUBLE,
+				INVOICE_NO2 VARCHAR(40),
+				INVOICE_MONEY2 DOUBLE,
+				EXTEND_PROP1 VARCHAR(200),
+			  	EXTEND_PROP2 VARCHAR(200),
+			  	CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX SETTLE_NO_INDEX(SETTLE_NO)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="page" parameterType="map" resultType="InvoiceData" resultMap="invoiceDataResultMap">
+		SELECT ID, SETTLE_NO, INVOICE_DATE, INVOICE_NO1, ROUND(INVOICE_MONEY1, 2) INVOICE_MONEY1, INVOICE_NO2, ROUND(INVOICE_MONEY2, 2) INVOICE_MONEY2, TAX1, TAX2, TITLE FROM T_INVOICE_DATA WHERE 1=1
+		<if test="settleNo != null">
+   			AND SETTLE_NO LIKE CONCAT('%',#{settleNo},'%' )
+ 		</if>
+ 		<if test="sortOrder != null">
+	    	ORDER BY ${sortOrder}
+	  	</if>
+        LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+         SELECT count(ID) FROM T_INVOICE_DATA WHERE 1=1
+		<if test="settleNo != null">
+			AND SETTLE_NO LIKE CONCAT('%',#{settleNo},'%' )
+		</if>
+	</select>
+	
+	<insert id="save" parameterType="java.util.List">
+		INSERT INTO T_INVOICE_DATA (
+	        SETTLE_NO,
+	        INVOICE_DATE,
+			INVOICE_NO1,
+			TAX1,
+			TAX2,
+			TITLE,
+			INVOICE_MONEY1,
+			INVOICE_NO2,
+			INVOICE_MONEY2,
+			EXTEND_PROP1,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES 
+		<foreach collection="list" item="item" index="index" separator="," > 
+			(#{item.settleNo},#{item.invoiceDate},#{item.invoiceNo1},#{item.tax1},
+			 #{item.tax2},#{item.title},#{item.invoiceMoney1},#{item.invoiceNo2},
+			 #{item.invoiceMoney2},#{item.extendProp1},#{item.creatorId},#{item.creator},#{item.createdTime})
+		</foreach>
+	</insert>
+	
+	<select id="getAllSettleNo" resultType="String" >
+         SELECT SETTLE_NO FROM T_INVOICE_DATA GROUP BY SETTLE_NO HAVING COUNT(*) > 1
+	</select>
+	
+	<select id="dataDelete" parameterType="String" >
+         DELETE FROM T_INVOICE_DATA WHERE ID = #{id}
+	</select>
+	
+	<delete id="deleteMore">
+		DELETE FROM T_INVOICE_DATA WHERE SETTLE_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<select id="noInWithHold" resultType="String">
+		SELECT SETTLE_NO FROM T_INVOICE_DATA WHERE EXTEND_PROP1 = 0 AND SETTLE_NO NOT IN (SELECT SETTLE_NO FROM T_WITHHOLDING_DATA) 
+	</select>
+	
+	<delete id="delete">
+		DELETE FROM T_INVOICE_DATA WHERE EXTEND_PROP1 = 0 AND SETTLE_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<update id="setToOne" parameterType="Long">
+		UPDATE T_INVOICE_DATA SET EXTEND_PROP1 = 1 WHERE EXTEND_PROP1 = 0
+	</update>
+	
+	<select id="getInvoBySettleNo" parameterType="String" resultType="InvoiceData" resultMap="invoiceDataResultMap">
+		SELECT SETTLE_NO, INVOICE_DATE, INVOICE_NO1, INVOICE_MONEY1, INVOICE_NO2, INVOICE_MONEY2, EXTEND_PROP1, TAX1, TAX2, TITLE FROM T_INVOICE_DATA WHERE SETTLE_NO = #{settleNo}
+	</select>
+	
+	<update id="updateInfo" parameterType="map">
+		UPDATE T_INVOICE_DATA SET INVOICE_DATE = #{invoiceDate}, INVOICE_NO1 = #{invoiceNo1}, INVOICE_MONEY1 = #{invoiceMoney1}, 
+			INVOICE_NO2 = #{invoiceNo2}, INVOICE_MONEY2 = #{invoiceMoney2}, TAX1 = #{tax1}, TAX2 = #{tax2}, TITLE = #{title}
+			 WHERE SETTLE_NO = #{settleNo}
+	</update>
+	
+	<insert id="saveInfo" parameterType="map">
+		INSERT INTO T_INVOICE_DATA (
+	        SETTLE_NO,
+	        INVOICE_DATE,
+			INVOICE_NO1,
+			TAX1,
+			TAX2,
+			TITLE,
+			INVOICE_MONEY1,
+			INVOICE_NO2,
+			INVOICE_MONEY2,
+			EXTEND_PROP1,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES (
+			#{settleNo},
+			#{invoiceDate},
+			#{invoiceNo1},
+			#{tax1},
+			#{tax2},
+			#{title},
+			#{invoiceMoney1},
+			#{invoiceNo2},
+			#{invoiceMoney2},
+			#{extendProp1},
+			#{creatorId},
+			#{creator},
+			#{createdTime}
+		)
+	</insert>
+	
+	<select id="checkInvo" parameterType="String" resultType="Long">
+		SELECT COUNT(1) FROM T_INVOICE_DATA WHERE SETTLE_NO = #{settleNo}
+	</select>
+	
+</mapper>

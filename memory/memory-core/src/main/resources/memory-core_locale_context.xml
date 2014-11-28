@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+                     http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+                     http://www.springframework.org/schema/context
+                     http://www.springframework.org/schema/context/spring-context-3.1.xsd
+                     http://www.springframework.org/schema/aop
+                     http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+                     http://www.springframework.org/schema/tx
+                     http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
+	
+	<bean id="errMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename">
+			<value>memory_err</value>
+		</property>
+		<property name="useCodeAsDefaultMessage" value="true" />
+		<property name="cacheSeconds" value="-1" /> <!-- cached forever -->
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>
+
+	<bean id="infoMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename">
+			<value>memory_info</value>
+		</property>
+		<property name="useCodeAsDefaultMessage" value="true" />
+		<property name="cacheSeconds" value="-1" /> <!-- cached forever -->
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>
+
+	<aop:config>
+		<aop:aspect ref="exceptionLocaler" order="1">
+			<aop:pointcut id="exception_pointcut"
+				expression="execution(* com.jshuabo.*.server.service..*.*(..)) or execution(* com.jshuabo.*.server.dao..*.*(..))
+				or execution(* com.jshuabo.*.server.model..*.*(..)) or execution(* com.jshuabo.*.server.util..*.*(..))
+				or execution(* com.jshuabo.*.server.security..*.*(..)) or execution(* com.jshuabo.*.server.web..*.*(..))
+				or execution(* com.jshuabo.*.server.quartz..*.*(..))" />
+			<aop:after-throwing pointcut-ref="exception_pointcut"
+				method="localeException" arg-names="point, cause" throwing="cause" />
+		</aop:aspect>
+	</aop:config>
+
+	<bean id="exceptionLocaler" class="com.jshuabo.frame.server.aop.service.locale.ExceptionLocaler">
+		<property name="messageSource" ref="errMessageSource" />
+	</bean>
+	
+</beans>

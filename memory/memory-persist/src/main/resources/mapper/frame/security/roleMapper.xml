@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.frame.server.dao.security.IRoleMapper">
+	<resultMap type="Role" id="roleResultMap">
+		<id property="id" column="ID" />
+		<result property="code" column="CODE" />
+		<result property="name" column="NAME" />
+		<result property="description" column="DESCRIPTION" />
+		<result property="enabled" column="ENABLED" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+
+		<result property="info.creatorId" column="CREATOR_ID" />
+		<result property="info.creator" column="CREATOR" />
+		<result property="info.createdTime" column="CREATED_TIME" />
+		<result property="info.lastOperatorId" column="LAST_OPERATOR_ID" />
+		<result property="info.lastOperator" column="LAST_OPERATOR" />
+		<result property="info.lastOperatedTime" column="LAST_OPERATED_TIME" />
+	</resultMap>
+
+	<!-- <cache /> -->
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS M_ROLE_AUTHORITY;
+			DROP TABLE IF EXISTS M_USER_ROLE;
+			DROP TABLE IF EXISTS M_ROLE;
+			CREATE TABLE M_ROLE
+			(
+				ID BIGINT(20) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+				CODE VARCHAR(255) NOT NULL UNIQUE,
+				NAME VARCHAR(255),
+				DESCRIPTION VARCHAR(255),
+				STATUS VARCHAR(255),
+				ENABLED BOOLEAN DEFAULT 0,
+				EXTEND_PROP1 VARCHAR(255),
+		 		EXTEND_PROP2 VARCHAR(255),
+				CREATOR_ID BIGINT(20),
+			 	CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+		 		LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX CODE_INDEX(CODE)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="queryByUserId" parameterType="Long" resultType="Role" resultMap="roleResultMap">
+        <![CDATA[
+            SELECT m_r.* FROM M_ROLE m_r, M_USER_ROLE m_u_r WHERE 1=1
+            AND m_r.id=m_u_r.ROLE_ID 
+            AND m_u_r.USER_ID = #{userId}
+        ]]>
+	</select>
+
+	<select id="load" parameterType="Long" resultType="Role" resultMap="roleResultMap">
+        <![CDATA[
+            SELECT * FROM M_ROLE WHERE ID = #{id} 
+        ]]>
+	</select>
+
+	<select id="loadAll" resultType="Role" resultMap="roleResultMap">
+        <![CDATA[
+            SELECT * FROM M_ROLE
+        ]]>
+	</select>
+
+	<select id="exportAll" parameterType="map" resultType="Role" resultMap="roleResultMap">
+            SELECT * FROM M_ROLE WHERE 1=1
+			<if test="code != ''">
+		    	AND CODE LIKE CONCAT('%',#{code},'%' )
+		  	</if>
+			<if test="name != ''">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+			<if test="enabled != ''">
+		    	AND ENABLED  = #{enabled}
+		  	</if>
+	</select>
+	
+	<select id="exportSelections" resultType="Role" resultMap="roleResultMap">
+            SELECT * FROM M_ROLE WHERE ID IN
+            <foreach item="item" index="index" collection="list"   
+                     open="(" separator="," close=")">  
+                     #{item}  
+             </foreach> 
+	</select>
+	
+	<select id="page" parameterType="map" resultType="Role" resultMap="roleResultMap">
+            SELECT * FROM M_ROLE WHERE 1=1
+			<if test="code != null">
+		    	AND CODE LIKE CONCAT('%',#{code},'%' )
+		  	</if>
+			<if test="name != null">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+			<if test="enabled != null">
+		    	AND ENABLED  = #{enabled}
+		  	</if>
+            <if test="sortOrder != null">
+		    	ORDER BY ${sortOrder}
+		  	</if>
+            LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+            SELECT count(ID) FROM M_ROLE WHERE 1=1
+			<if test="code != null">
+		    	AND CODE LIKE CONCAT('%',#{code},'%' )
+		  	</if>
+			<if test="name != null">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+		  	<if test="enabled != null">
+		    	AND ENABLED  = #{enabled}
+		  	</if>
+	</select>
+	
+	<insert id="save" parameterType="Role" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO M_ROLE (
+			CODE,NAME,DESCRIPTION,EXTEND_PROP1,EXTEND_PROP2,ENABLED,
+			CREATOR_ID,CREATOR,CREATED_TIME
+		) VALUES (
+			#{code},#{name},#{description},#{extendProp1},#{extendProp2},#{enabled},
+			#{creatorId},#{creator},#{createdTime}
+		)
+	</insert>
+
+	<update id="update" parameterType="Role">
+		UPDATE M_ROLE
+			SET 
+			NAME = #{name},
+	 		DESCRIPTION = #{description},
+			ENABLED = #{enabled},
+			EXTEND_PROP1 = #{extendProp1},
+			EXTEND_PROP2 = #{extendProp2},
+			LAST_OPERATOR_ID = #{lastOperatorId},
+			LAST_OPERATOR = #{lastOperator},
+			LAST_OPERATED_TIME = #{lastOperatedTime}
+		WHERE ID	= #{id}
+	</update>
+
+	<delete id="delete" parameterType="Role">
+		<![CDATA[
+			DELETE FROM M_ROLE WHERE ID = #{id}
+		]]>
+	</delete>
+
+	<delete id="deleteById" parameterType="Long">
+		<![CDATA[
+			DELETE FROM M_ROLE WHERE ID = #{id}
+		]]>
+	</delete>
+	
+	<select id="pageByCondition" parameterType="map" resultType="Role" resultMap="roleResultMap">
+            SELECT * FROM M_ROLE WHERE 1=1
+            <if test="orgId != 1">
+            	AND ORGANIZATION_ID = #{orgId}
+            </if>
+			<if test="code != ''">
+		    	AND CODE LIKE CONCAT('%',#{code},'%' )
+		  	</if>
+			<if test="name != ''">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+		  	<if test="noBindRole == 'false'">
+		  		<if test="status == 'in'">
+			  		AND	ID IN
+		            <foreach item="item" index="index" collection="roleIds"   
+		                     open="(" separator="," close=")">  
+		                     #{item}  
+		             </foreach> 
+			  	</if>
+			  	<if test="status == 'out'">
+			  		AND	ID NOT IN
+		            <foreach item="item" index="index" collection="roleIds"   
+		                     open="(" separator="," close=")">  
+		                     #{item}  
+		             </foreach> 
+			  	</if>
+		  	</if>
+		  	LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="totalByCondition" parameterType="map" resultType="Long" >
+            SELECT COUNT(*) FROM M_ROLE WHERE 1=1
+            <if test="orgId != 1">
+            	AND ORGANIZATION_ID = #{orgId}
+            </if>
+			<if test="code != ''">
+		    	AND CODE LIKE CONCAT('%',#{code},'%' )
+		  	</if>
+			<if test="name != ''">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+		  	<if test="noBindRole == 'false'">
+		  		<if test="status == 'in'">
+			  		AND	ID IN
+		            <foreach item="item" index="index" collection="roleIds"   
+		                     open="(" separator="," close=")">  
+		                     #{item}  
+		             </foreach> 
+			  	</if>
+			  	<if test="status == 'out'">
+			  		AND	ID NOT IN
+		            <foreach item="item" index="index" collection="roleIds"   
+		                     open="(" separator="," close=")">  
+		                     #{item}  
+		             </foreach> 
+			  	</if>
+		  	</if>
+	</select>
+	
+	<select id="getAllRole" resultMap="role_map" resultType="Map">
+		SELECT ID,NAME,'icon-save' AS ICON FROM M_ROLE
+	</select>
+	
+	<resultMap type="Map" id="role_map">
+		<id column="ID" property="id"/>
+		<result column="NAME" property="text" />
+		<result column="ICON" property="iconCls" />
+	</resultMap>
+</mapper>

@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="com.jshuabo.reportcenter.server.dao.finance.IFinanceServiceCostMapper">
+
+	<resultMap id="financeServiceCostResultMap" type="FinanceServiceCost">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="MODEL" property="model" jdbcType="VARCHAR" />
+		<result column="CATEGORY" property="category" jdbcType="VARCHAR" />
+		<result column="BRAND" property="brand" jdbcType="VARCHAR" />
+		<result column="QUANTITY" property="quantity" jdbcType="INTEGER" />
+		<result column="SERVICE_CHARGE" property="serviceCharge" jdbcType="DOUBLE" />
+		<result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+		<result column="EXTEND_PROP1" property="extendProp1" jdbcType="DOUBLE" />
+		<result column="EXTEND_PROP2" property="extendProp2" jdbcType="INTEGER" />
+		<result column="EXTEND_PROP3" property="extendProp3" jdbcType="VARCHAR" />
+
+		<result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+		<result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+		<result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+		<result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+		<result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+		<result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+
+		<association property="financeSupplier" column="SUPPLIER_ID" foreignColumn="ID"  
+			javaType="com.jshuabo.reportcenter.server.model.finance.FinanceSupplier"
+			select="com.jshuabo.reportcenter.server.dao.finance.IFinanceSupplierMapper.selectById" >
+			<id column="ID" property="id" jdbcType="BIGINT" />
+			<result column="NAME" property="name" jdbcType="VARCHAR" />
+		</association>
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		ID, MODEL,CATEGORY,BRAND, SUPPLIER_ID, QUANTITY, SERVICE_CHARGE, DESCRIPTION,
+		EXTEND_PROP1,
+		EXTEND_PROP2, EXTEND_PROP3, CREATOR_ID, CREATOR, CREATED_TIME, LAST_OPERATOR_ID,
+		LAST_OPERATOR, LAST_OPERATED_TIME
+	</sql>
+	
+	<select id="page" parameterType="Map" resultMap="financeServiceCostResultMap">
+		select <include refid="Base_Column_List"/> from t_finance_service_cost
+		<where>
+			1 = 1 
+			<if test="supplier_id != null">
+				and supplier_id = #{supplier_id}
+			</if>
+			<if test="model != null">
+				and model = #{model}
+			</if>
+			<if test="brand != null">
+				and brand = #{brand}
+			</if>
+			<if test="category != null">
+				and category = #{category}
+			</if>
+			<if test="sortOrder != null">
+				ORDER BY ${sortOrder}
+		  	</if>
+            LIMIT #{offset}, #{rows}
+		</where>
+	</select>
+	
+	<select id="total" parameterType="Map" resultType="java.lang.Long">
+		select count(*) from t_finance_service_cost
+		<where>
+			1 = 1 
+			<if test="supplier_id != null">
+				and supplier_id = #{supplier_id}
+			</if>
+			<if test="model != null">
+				and model = #{model}
+			</if>
+			<if test="brand != null">
+				and brand = #{brand}
+			</if>
+			<if test="category != null">
+				and category = #{category}
+			</if>
+		</where>
+	</select>
+	
+	<select id="getServiceCosts" resultMap="financeServiceCostResultMap" parameterType="Long">
+		select ID, MODEL,CATEGORY,BRAND, QUANTITY, SERVICE_CHARGE, DESCRIPTION from t_finance_service_cost where SUPPLIER_ID = #{id,jdbcType=BIGINT}
+	</select>
+	
+	<select id="selectById" resultMap="financeServiceCostResultMap" parameterType="java.lang.Long">
+		SELECT <include refid="Base_Column_List"/> FROM
+			t_finance_service_cost
+		WHERE ID = #{id,jdbcType=BIGINT}
+	</select>
+	
+<!-- 	<select id="getAllServiceCostModel" resultMap="financeServiceCostResultMap"> -->
+<!-- 		SELECT distinct MODEL FROM t_finance_service_cost -->
+<!-- 	</select> -->
+	
+<!-- 	<select id="getAllServiceCostCategory" resultMap="financeServiceCostResultMap"> -->
+<!-- 		SELECT distinct CATEGORY FROM t_finance_service_cost -->
+<!-- 	</select> -->
+	
+	<!-- 关联 供应商 all 服务费 -->
+	<select id="getAllServiceCost" resultMap="costMap">
+		SELECT s.`NAME`,c.* FROM t_finance_supplier s,t_finance_service_cost c WHERE c.SUPPLIER_ID = s.ID
+	</select>
+	
+	<select id="getServiceCostBySupplier" resultType="Map" parameterType="java.lang.String">
+		SELECT
+			s.`NAME`,
+			c.BRAND,
+			c.MODEL,
+			c.CATEGORY,
+			c.SUPPLIER_ID,
+			c.QUANTITY,
+			c.SERVICE_CHARGE,
+			c.DESCRIPTION,
+			c.EXTEND_PROP1,
+			c.EXTEND_PROP2,
+			c.EXTEND_PROP3
+		FROM
+			t_finance_supplier s,
+			t_finance_service_cost c
+		WHERE
+			c.SUPPLIER_ID = s.ID AND s.name = #{supplier}
+	</select>
+
+	<delete id="deleteByIds" parameterType="java.lang.Long">
+		DELETE FROM t_finance_service_cost WHERE ID IN
+		<foreach item="item" index="index" collection="ids"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+
+	<insert id="insert" parameterType="Map">
+		insert into t_finance_service_cost
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="model != null">
+				MODEL,
+			</if>
+			<if test="brand != null">
+				 BRAND,
+			</if>
+			<if test="category != null">
+				CATEGORY,
+			</if>
+			<if test="supplier_id != null">
+				SUPPLIER_ID,
+			</if>
+			<if test="quantity != null">
+				QUANTITY,
+			</if>
+			<if test="serviceCharge != null">
+				SERVICE_CHARGE,
+			</if>
+			<if test="description != null">
+				DESCRIPTION,
+			</if>
+			<if test="extendProp1 != null">
+				EXTEND_PROP1,
+			</if>
+			<if test="extendProp2 != null">
+				EXTEND_PROP2,
+			</if>
+			<if test="extendProp3 != null">
+				EXTEND_PROP3,
+			</if>
+			<if test="creatorId != null">
+				CREATOR_ID,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createdTime != null">
+				CREATED_TIME
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="model != null">
+				#{model,jdbcType=VARCHAR},
+			</if>
+			<if test="brand != null">
+				#{brand,jdbcType=VARCHAR},
+			</if>
+			<if test="category != null">
+				#{category,jdbcType=VARCHAR},
+			</if>
+			<if test="supplier_id != null">
+				#{supplier_id,jdbcType=BIGINT},
+			</if>
+			<if test="quantity != null">
+				#{quantity,jdbcType=INTEGER},
+			</if>
+			<if test="serviceCharge != null">
+				#{serviceCharge,jdbcType=DOUBLE},
+			</if>
+			<if test="description != null">
+				#{description,jdbcType=VARCHAR},
+			</if>
+			<if test="extendProp1 != null">
+				#{extendProp1,jdbcType=DOUBLE},
+			</if>
+			<if test="extendProp2 != null">
+				#{extendProp2,jdbcType=INTEGER},
+			</if>
+			<if test="extendProp3 != null">
+				#{extendProp3,jdbcType=VARCHAR},
+			</if>
+			<if test="creatorId != null">
+				#{creatorId,jdbcType=BIGINT},
+			</if>
+			<if test="creator != null">
+				#{creator,jdbcType=VARCHAR},
+			</if>
+			<if test="createdTime != null">
+				#{createdTime,jdbcType=TIMESTAMP}
+			</if>
+		</trim>
+	</insert>
+
+	<update id="update" parameterType="Map">
+		update t_finance_service_cost
+		<set>
+			<if test="model != null">
+				MODEL = #{model,jdbcType=VARCHAR},
+			</if>
+			<if test="category != null">
+				CATEGORY = #{category,jdbcType=VARCHAR},
+			</if>
+			<if test="brand != null">
+				brand = #{brand,jdbcType=VARCHAR},
+			</if>
+			<if test="supplier_id != null">
+				SUPPLIER_ID = #{supplier_id,jdbcType=BIGINT},
+			</if>
+			<if test="quantity != null">
+				QUANTITY = #{quantity,jdbcType=INTEGER},
+			</if>
+			<if test="serviceCharge != null">
+				SERVICE_CHARGE = #{serviceCharge,jdbcType=DOUBLE},
+			</if>
+			<if test="description != null">
+				DESCRIPTION = #{description,jdbcType=VARCHAR},
+			</if>
+			<if test="extendProp1 != null">
+				EXTEND_PROP1 = #{extendProp1,jdbcType=DOUBLE},
+			</if>
+			<if test="extendProp2 != null">
+				EXTEND_PROP2 = #{extendProp2,jdbcType=INTEGER},
+			</if>
+			<if test="extendProp3 != null">
+				EXTEND_PROP3 = #{extendProp3,jdbcType=VARCHAR},
+			</if>
+			<if test="lastOperatorId != null">
+				LAST_OPERATOR_ID = #{lastOperatorId,jdbcType=BIGINT},
+			</if>
+			<if test="lastOperator != null">
+				LAST_OPERATOR = #{lastOperator,jdbcType=VARCHAR},
+			</if>
+			<if test="lastOperatedTime != null">
+				LAST_OPERATED_TIME = #{lastOperatedTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+	<resultMap type="Map" id="costMap">
+		<id column="id" property="id" />
+		<result column="MODEL" property="model"/>
+		<result column="BRAND" property="brand"/>
+		<result column="CATEGORY" property="category"/>
+		<result column="QUANTITY" property="quantity" />
+		<result column="service_charge" property="serviceCharge" />
+		<result column="description" property="description" />
+		<result column="EXTEND_PROP1" property="extendprop1" />
+		<result column="EXTEND_PROP2" property="extendprop2" />
+		<result column="EXTEND_PROP3" property="extendprop3"  />
+
+		<result column="NAME" property="supplier" />
+	</resultMap>
+</mapper>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.frame.server.dao.security.IPermissionMapper">
+	<resultMap type="Permission" id="permissionResultMap">
+		<id property="id" column="ID" />
+		<result property="code" column="CODE" />
+		<result property="name" column="NAME" />
+		<result property="type" column="TYPE" />
+		<result property="url" column="URL" />
+		<result property="content" column="CONTENT" />
+		<result property="priority" column="PRIORITY" />
+		<result property="beTop" column="BE_TOP" />
+		<result property="description" column="DESCRIPTION" />
+		<result property="enabled" column="ENABLED" />
+
+		<result property="info.creatorId" column="CREATOR_ID" />
+		<result property="info.creator" column="CREATOR" />
+		<result property="info.createdTime" column="CREATED_TIME" />
+		<result property="info.lastOperatorId" column="LAST_OPERATOR_ID" />
+		<result property="info.lastOperator" column="LAST_OPERATOR" />
+		<result property="info.lastOperatedTime" column="LAST_OPERATED_TIME" />
+		
+		<association property="parentPermission" column="PARENT_PERMISSION_ID" jdbcType="BIGINT" 
+			javaType="com.jshuabo.frame.server.model.security.Permission" select="load" />
+	</resultMap>
+
+	<!-- <cache /> -->
+
+	<sql id="createTable">
+	<![CDATA[
+		DROP TABLE IF EXISTS M_ROLE_PERMISSION;
+		DROP TABLE IF EXISTS M_PERMISSION;
+		CREATE TABLE M_PERMISSION
+		(
+			ID BIGINT(20) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	 		CODE VARCHAR(255) NOT NULL UNIQUE,
+	 		NAME VARCHAR(255),
+	 		PARENT_PERMISSION_ID BIGINT(20),
+			TYPE VARCHAR(255),
+	 		URL VARCHAR(500),
+	 		CONTENT VARCHAR(500),
+	 		BE_TOP BOOLEAN,
+	 		PRIORITY INTEGER,
+			DESCRIPTION VARCHAR(255),
+	 		ENABLED BOOLEAN DEFAULT 0,
+			CREATOR_ID BIGINT(20),
+	 		CREATOR VARCHAR(255),
+			CREATED_TIME DATETIME,
+			LAST_OPERATOR_ID BIGINT(20),
+	 		LAST_OPERATOR VARCHAR(255),
+			LAST_OPERATED_TIME DATETIME,
+			INDEX PARENT_PERMISSION_ID_IDX(PARENT_PERMISSION_ID)
+		)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+	]]>
+	</sql>
+	<select id="getChiltrens" parameterType="Long" resultType="Permission" resultMap="permissionResultMap">
+		select * from M_PERMISSION a where a.PARENT_PERMISSION_ID = #{pid}
+	</select>
+	<select id="loadRoot" resultType="Permission" resultMap="permissionResultMap">
+		select * from M_PERMISSION a where a.PARENT_PERMISSION_ID = -1 or a.PARENT_PERMISSION_ID is null
+	</select>
+	<select id="page" parameterType="map" resultType="Permission" resultMap="permissionResultMap">
+            SELECT * FROM M_PERMISSION WHERE 1=1
+			<if test="code != null">
+		    	AND CODE LIKE CONCAT('%',#{code},'%' )
+		  	</if>
+			<if test="name != null">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+			<if test="enabled != null">
+		    	AND ENABLED  = #{enabled}
+		  	</if>
+            <if test="sortOrder != null">
+		    	ORDER BY ${sortOrder}
+		  	</if>
+            LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+            SELECT count(ID) FROM M_PERMISSION WHERE 1=1
+			<if test="code != null">
+		    	AND CODE LIKE CONCAT('%',#{code},'%' )
+		  	</if>
+			<if test="name != null">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+		  	<if test="enabled != null">
+		    	AND ENABLED  = #{enabled}
+		  	</if>
+	</select>
+	
+	<select id="queryByRoles" parameterType="Role" resultType="Permission"
+		resultMap="permissionResultMap">
+            SELECT m_p.* 
+            FROM M_PERMISSION m_p, M_ROLE_PERMISSION m_r_p 
+            WHERE 1=1
+            AND m_p.ID = m_r_p.PERMISSION_ID
+            AND m_r_p.ROLE_ID IN 
+            <foreach collection="roles" item="item" index="index" open="(" separator="," close=")">
+	        		#{item.id}
+	    	</foreach>
+	    	ORDER BY m_p.PRIORITY
+	</select>
+	
+	<select id="load" parameterType="Long" resultType="Permission"
+		resultMap="permissionResultMap">
+        <![CDATA[
+            SELECT * FROM M_PERMISSION WHERE ID = #{id} 
+        ]]>
+	</select>
+
+	<select id="loadAll" resultType="Permission" resultMap="permissionResultMap">
+        <![CDATA[
+            SELECT * FROM M_PERMISSION
+        ]]>
+	</select>
+	
+	<select id="pageByCondition" parameterType="map" resultType="Permission" resultMap="permissionResultMap">
+		SELECT * FROM M_PERMISSION WHERE 1 = 1
+		<if test="status == 'in'">
+			AND ID IN
+			<foreach collection="permissionIds" index="index" item="item"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="status == 'out'">
+			AND ID NOT IN
+			<foreach collection="permissionIds" index="index" item="item"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+
+	<insert id="save" parameterType="Permission" useGeneratedKeys="true"
+		keyProperty="id">
+		INSERT INTO M_PERMISSION
+		(CODE,NAME,TYPE,PRIORITY,URL,CONTENT,DESCRIPTION,ENABLED,PARENT_PERMISSION_ID,BE_TOP,
+		CREATOR_ID,CREATOR,CREATED_TIME)
+		VALUES
+		(#{code},#{name},#{type},#{priority},#{url},#{content},#{description},#{enabled},#{parentPermission.id},#{beTop},#{creatorId},#{creator},#{createdTime})
+	</insert>
+
+	<update id="update" parameterType="Permission">
+		UPDATE M_PERMISSION
+		SET 
+		NAME = #{name}, 
+		TYPE = #{type},
+		URL = #{url},
+		CONTENT = #{content},
+		BE_TOP = #{beTop},
+		PRIORITY = #{priority},
+		DESCRIPTION = #{description},
+		ENABLED=#{enabled},
+		PARENT_PERMISSION_ID = #{parentPermission.id},
+		LAST_OPERATOR_ID=#{lastOperatorId},
+		LAST_OPERATOR=#{lastOperator},
+		LAST_OPERATED_TIME=#{lastOperatedTime} WHERE ID = #{id}
+	</update>
+
+	<delete id="delete" parameterType="Permission">
+		<![CDATA[
+			DELETE FROM M_PERMISSION WHERE ID = #{id}
+		]]>
+	</delete>
+
+	<delete id="deleteById" parameterType="Long">
+		<![CDATA[
+			DELETE FROM M_PERMISSION WHERE ID = #{id}
+		]]>
+	</delete>
+</mapper>

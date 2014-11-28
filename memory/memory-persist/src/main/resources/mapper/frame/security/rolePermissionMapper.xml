@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.frame.server.dao.security.IRolePermissionMapper">
+	<resultMap type="RolePermission" id="rolePermissionResultMap">
+		<id property="id" column="ID" />
+		<result property="roleId" column="ROLE_ID" />
+		<result property="permissionId" column="PERMISSION_ID" />
+		<result property="enabled" column="ENABLED" />
+
+		<result property="info.creatorId" column="CREATOR_ID" />
+		<result property="info.creator" column="CREATOR" />
+		<result property="info.createdTime" column="CREATED_TIME" />
+		<result property="info.lastOperatorId" column="LAST_OPERATOR_ID" />
+		<result property="info.lastOperator" column="LAST_OPERATOR" />
+		<result property="info.lastOperatedTime" column="LAST_OPERATED_TIME" />
+	</resultMap>
+
+	<!-- <cache /> -->
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS M_ROLE_PERMISSION;
+			CREATE TABLE M_ROLE_PERMISSION
+			(
+				ID BIGINT(20) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+				ROLE_ID BIGINT(20),
+		 		PERMISSION_ID BIGINT(20),
+		 		ENABLED BOOLEAN DEFAULT 0,
+				CREATOR_ID BIGINT(20),
+		 		CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+			 	LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				FOREIGN KEY (PERMISSION_ID) REFERENCES M_PERMISSION(ID),
+				FOREIGN KEY (ROLE_ID) REFERENCES M_ROLE(ID),
+				INDEX PERMISSION_ID_INDEX(PERMISSION_ID),
+				INDEX ROLE_ID_INDEX(ROLE_ID)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="loadByRoleId" parameterType="Long" resultType="RolePermission" resultMap="rolePermissionResultMap">
+        <![CDATA[
+            SELECT * FROM M_ROLE_PERMISSION WHERE ROLE_ID = #{roleId} 
+        ]]>
+	</select>
+	
+	<select id="load" parameterType="Long" resultType="RolePermission" resultMap="rolePermissionResultMap">
+        <![CDATA[
+            SELECT * FROM M_ROLE_PERMISSION WHERE ID = #{id} 
+        ]]>
+	</select>
+
+	<select id="loadAll" resultType="RolePermission" resultMap="rolePermissionResultMap">
+        <![CDATA[
+            SELECT * FROM M_ROLE_PERMISSION
+        ]]>
+	</select>
+
+	<insert id="save" parameterType="RolePermission" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO M_ROLE_PERMISSION (
+			ROLE_ID,PERMISSION_ID, ENABLED,CREATOR_ID,CREATOR,CREATED_TIME
+		) VALUES (
+			#{roleId},#{permissionId},#{enabled},#{creatorId},#{creator}
+			,#{createdTime}
+		)
+	</insert>
+
+	<update id="update" parameterType="RolePermission">
+		UPDATE M_ROLE_PERMISSION
+		SET
+			ROLE_ID = #{roleId},
+			PERMISSION_ID = #{permissionId}
+			ENABLED = #{enabled}
+			LAST_OPERATOR_ID = #{lastOperatorId},
+			LAST_OPERATOR = #{lastOperator},
+			LAST_OPERATED_TIME = #{lastOperatedTime},
+		WHERE ID = #{id}
+	</update>
+
+	<delete id="delete" parameterType="RolePermission">
+		<![CDATA[
+			DELETE FROM M_ROLE_PERMISSION WHERE ID = #{id}
+		]]>
+	</delete>
+
+	<delete id="deleteById" parameterType="Long">
+		<![CDATA[
+			DELETE FROM M_ROLE_PERMISSION WHERE ID = #{id}
+		]]>
+	</delete>
+	<delete id="deleteByRoleId" parameterType="Long">
+		<![CDATA[
+			DELETE FROM M_ROLE_PERMISSION WHERE ROLE_ID = #{roleId}
+		]]>
+	</delete>
+</mapper>

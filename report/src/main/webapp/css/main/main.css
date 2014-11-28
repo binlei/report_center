@@ -1,0 +1,89 @@
+#north_panle {
+	height: 85px;
+	overflow: hidden;
+}
+
+.top-bg {
+	background-image: url('../../images/bj.jpg');
+	background-repeat:no-repeat;
+	background-color:#0183CF;
+	height: 100%;
+}
+
+.top-bg_logo,.top-bg_title {
+	height: 100%;
+	float: left;
+}
+
+.top-bg_title {
+	margin-left:-5px;	
+}
+
+.top-bg_title_top {
+	padding:15px 0 0 0;
+	height: 30px;
+	font-size: 30px;
+	vertical-align: bottom;
+}
+
+.top-bg_title_bottom {
+	margin-top: 5px;
+	height: 20px;
+	font-size: 14px;
+}
+
+.top-bg_context {
+	float: right;
+	width: 300px;
+	height: 100%;
+}
+
+.top_tool_bar_date {
+	width: 100%;
+	height: 50%; 
+	float:right;
+	margin: 0 auto;
+	padding-top: 20px;
+}
+
+.top_tool_bar_userinfo {
+	width: 400px;
+	height: 50%;
+	float:right; 
+	margin: -13px auto;
+	overflow: visible;
+	white-space:nowrap;
+}
+
+.footer {
+	background-color: #ACCFFA;
+	width: 100%;
+	text-align: center;
+	line-height: 25px;
+}
+
+#south_panle {
+	height: 25px;
+	overflow: hidden;
+}
+
+#mainPanle {
+	background: #eee;
+	overflow-y: hidden;
+}
+
+#west {
+	width: 235px;
+}
+
+#home {
+	padding: 20px;
+	overflow: hidden;
+}
+
+#mm {
+	width: 100px;
+}
+a { 
+	text-decoration:none;
+}

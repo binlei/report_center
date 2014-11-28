@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.transport.ITransportMapper">
+	<resultMap type="Transport" id="transportResultMap">
+		<id column="ID" property="id" jdbcType="INTEGER" />
+	    <result column="ORDER_DATE" property="orderDate" jdbcType="DATE" />
+	    <result column="PROJECT" property="project" jdbcType="VARCHAR" />
+	    <result column="START_CITY" property="startCity" jdbcType="VARCHAR" />
+	    <result column="END_CITY" property="endCity" jdbcType="VARCHAR" />
+	    <result column="SUPPLIER" property="supplier" jdbcType="VARCHAR" />
+	    <result column="CUSTOMER" property="customer" jdbcType="VARCHAR" />
+	    <result column="DELIVERY" property="delivery" jdbcType="VARCHAR" />
+	    <result column="ORDER_NO" property="orderNo" jdbcType="VARCHAR" />
+	    <result column="TRANS_NO" property="transNo" jdbcType="VARCHAR" />
+	    <result column="RECEIPT_DATE" property="receiptDate" jdbcType="DATE" />
+	    <result column="TERMINAL_NO" property="terminalNo" jdbcType="VARCHAR" />
+	    <result column="REFERENCE_NO" property="referenceNo" jdbcType="VARCHAR" />
+	    <result column="PAYMENTS_DATE" property="paymentsDate" jdbcType="DATE" />
+	    <result column="PAYMENTS_TYPE" property="paymentsType" jdbcType="VARCHAR" />
+	    <result column="PAYMENTS_CARD" property="paymentsCard" jdbcType="VARCHAR" />
+	    <result column="TRUEPAY" property="truePay" jdbcType="VARCHAR" />
+	    <result column="MONEY" property="money" jdbcType="VARCHAR" />
+	    <result column="REMARKS" property="remarks" jdbcType="VARCHAR" />
+	    <result column="EXTEND_PROP1" property="extendProp1" jdbcType="VARCHAR" />
+	    <result column="EXTEND_PROP2" property="extendProp2" jdbcType="VARCHAR" />
+	    <result column="EXTEND_PROP3" property="extendProp3" jdbcType="VARCHAR" />
+	    <result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+	    <result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+	    <result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+	    <result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+	    <result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+	    <result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_TRANSPORT_DATA;
+			CREATE TABLE T_TRANSPORT_DATA
+			(
+				ID INT(40) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				ORDER_DATE DATE,
+				PROJECT VARCHAR(80),
+				START_CITY VARCHAR(40),
+				END_CITY VARCHAR(40),
+				SUPPLIER VARCHAR(255),
+				CUSTOMER VARCHAR(255),
+				DELIVERY VARCHAR(40),
+				ORDER_NO VARCHAR(40) NOT NULL,
+				TRANS_NO VARCHAR(40) NOT NULL,
+			 	RECEIPT_DATE DATE,
+			  	TERMINAL_NO VARCHAR(40),
+				REFERENCE_NO VARCHAR(40),
+				PAYMENTS_DATE DATE,
+				PAYMENTS_TYPE VARCHAR(40),
+				PAYMENTS_CARD VARCHAR(40),
+				TRUEPAY VARCHAR(40),
+				MONEY VARCHAR(40),
+				REMARKS VARCHAR(1500),
+				EXTEND_PROP1 VARCHAR(255),
+			  	EXTEND_PROP2 VARCHAR(255),
+				EXTEND_PROP3 VARCHAR(255),
+			  	CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX ORDERNO_INDEX(ORDER_NO),
+				INDEX TRANSNO_INDEX(TRANS_NO)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="page" parameterType="map" resultType="Transport" resultMap="transportResultMap">
+		SELECT ID, ORDER_DATE, PROJECT, START_CITY, END_CITY, SUPPLIER, CUSTOMER, DELIVERY, ORDER_NO, TRANS_NO, RECEIPT_DATE, 
+				TERMINAL_NO, REFERENCE_NO, PAYMENTS_DATE, PAYMENTS_TYPE, PAYMENTS_CARD, TRUEPAY, MONEY, REMARKS, EXTEND_PROP1,CREATOR_ID ,CREATOR ,CREATED_TIME,
+				LAST_OPERATOR_ID, LAST_OPERATOR, LAST_OPERATED_TIME
+		FROM T_TRANSPORT_DATA WHERE 1=1
+		<if test="creatorId != 1 and creatorId != 34 and creatorId != 35 and creatorId != 36 and creatorId != 37 and creatorId != 16 and creatorId != 17 and creatorId != 50 and creatorId != '' and creatorId != null">
+           	AND CREATOR_ID = #{creatorId}
+        </if>
+		<if test="project != null">
+	    	AND PROJECT LIKE CONCAT('%',#{project},'%' )
+	  	</if>
+		<if test="supplier != null">
+	    	AND SUPPLIER LIKE CONCAT('%',#{supplier},'%' )
+	  	</if>
+           <if test="customer != null">
+	    	AND CUSTOMER LIKE CONCAT('%',#{customer},'%' )
+	  	</if>
+           <if test="orderNo != null">
+	    	AND ORDER_NO LIKE CONCAT('%',#{orderNo},'%' )
+	  	</if>
+           <if test="transNo != null">
+	    	AND TRANS_NO LIKE CONCAT('%',#{transNo},'%' )
+	  	</if>
+	  	<if test="orderBeginTime != null">
+			AND ORDER_DATE &gt;= #{orderBeginTime}
+		</if>
+		<if test="orderEndTime != null">
+			AND ORDER_DATE &lt;= #{orderEndTime}
+		</if>
+	  	<if test="receiptBeginTime != null">
+			AND RECEIPT_DATE &gt;= #{receiptBeginTime}
+		</if>
+		<if test="receiptEndTime != null">
+			AND RECEIPT_DATE &lt;= #{receiptEndTime}
+		</if>
+	  	<if test="paymentsBeginTime != null">
+			AND PAYMENTS_DATE &gt;= #{paymentsBeginTime}
+		</if>
+		<if test="paymentsEndTime != null">
+			AND PAYMENTS_DATE &lt;= #{paymentsEndTime}
+		</if>
+		<if test="terminalNo != null">
+	    	AND TERMINAL_NO LIKE CONCAT('%',#{terminalNo},'%' )
+	  	</if>
+	  	<if test="referenceNo != null">
+	    	AND REFERENCE_NO LIKE CONCAT('%',#{referenceNo},'%' )
+	  	</if>
+	  	<if test="sortOrder != null">
+	    	ORDER BY ${sortOrder}
+	  	</if>
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+		SELECT COUNT(ID) FROM T_TRANSPORT_DATA WHERE 1=1
+        <if test="creatorId != 1 and creatorId != 34 and creatorId != 35 and creatorId != 36 and creatorId != 37 and creatorId != 16 and creatorId != 17 and creatorId != 50">
+           	AND CREATOR_ID = #{creatorId}
+        </if>
+		<if test="project != null">
+	    	AND PROJECT LIKE CONCAT('%',#{project},'%' )
+	  	</if>
+		<if test="supplier != null">
+	    	AND SUPPLIER LIKE CONCAT('%',#{supplier},'%' )
+	  	</if>
+           <if test="customer != null">
+	    	AND CUSTOMER LIKE CONCAT('%',#{customer},'%' )
+	  	</if>
+           <if test="orderNo != null">
+	    	AND ORDER_NO LIKE CONCAT('%',#{orderNo},'%' )
+	  	</if>
+           <if test="transNo != null">
+	    	AND TRANS_NO LIKE CONCAT('%',#{transNo},'%' )
+	  	</if>
+	  	<if test="orderBeginTime != null">
+			AND ORDER_DATE &gt;= #{orderBeginTime}
+		</if>
+		<if test="orderEndTime != null">
+			AND ORDER_DATE &lt;= #{orderEndTime}
+		</if>
+	  	<if test="receiptBeginTime != null">
+			AND RECEIPT_DATE &gt;= #{receiptBeginTime}
+		</if>
+		<if test="receiptEndTime != null">
+			AND RECEIPT_DATE &lt;= #{receiptEndTime}
+		</if>
+	  	<if test="paymentsBeginTime != null">
+			AND PAYMENTS_DATE &gt;= #{paymentsBeginTime}
+		</if>
+		<if test="paymentsEndTime != null">
+			AND PAYMENTS_DATE &lt;= #{paymentsEndTime}
+		</if>
+		<if test="terminalNo != null">
+	    	AND TERMINAL_NO LIKE CONCAT('%',#{terminalNo},'%' )
+	  	</if>
+	  	<if test="referenceNo != null">
+	    	AND REFERENCE_NO LIKE CONCAT('%',#{referenceNo},'%' )
+	  	</if>
+	</select>
+	
+	<insert id="save" parameterType="java.util.List">
+		INSERT INTO T_TRANSPORT_DATA (
+	        ORDER_DATE,
+			PROJECT,
+			START_CITY,
+			END_CITY,
+			SUPPLIER,
+			CUSTOMER,
+			DELIVERY,
+			ORDER_NO,
+			TRANS_NO,
+			RECEIPT_DATE,
+	        EXTEND_PROP1,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES  
+		<foreach collection="list" item="item" index="index" separator="," >
+        	(#{item.orderDate},#{item.project},#{item.startCity},
+        	 #{item.endCity},#{item.supplier},#{item.customer},
+        	 #{item.delivery},#{item.orderNo},#{item.transNo},
+        	 #{item.receiptDate},#{item.extendProp1},
+        	 #{creatorId},#{creator},#{createdTime}) 
+    	</foreach> 
+    	
+	</insert>
+	
+	<update id="update" parameterType="Map">
+		UPDATE T_TRANSPORT_DATA SET TERMINAL_NO = #{terminalNo}, REFERENCE_NO = #{referenceNo}, 
+		<if test="receiptDate != null and receiptDate != ''">
+			RECEIPT_DATE = #{receiptDate},
+		</if>
+			PAYMENTS_DATE = #{paymentsDate}, 
+			PAYMENTS_TYPE = #{paymentsType}, 
+			PAYMENTS_CARD = #{paymentsCard}, 
+			TRUEPAY = #{truePay}, 
+			MONEY = #{money}, 
+			REMARKS = #{remarks}, 
+			EXTEND_PROP1 = 2,
+			LAST_OPERATOR_ID = #{lastOperatorId},
+			LAST_OPERATOR = #{lastOperator},
+			LAST_OPERATED_TIME = #{lastOperatedTime} WHERE ID = #{id}
+	</update>
+	
+	<select id="selectById" parameterType="String" resultType="Transport" resultMap="transportResultMap">
+		SELECT * FROM T_TRANSPORT_DATA WHERE ID = #{id}
+	</select>
+	
+	<select id="getRpNewOrderNo" resultType="String" parameterType="String">
+		SELECT ORDER_NO FROM T_TRANSPORT_DATA WHERE EXTEND_PROP1 = 0 AND CREATOR_ID = #{creatorId} GROUP BY ORDER_NO HAVING COUNT(*) > 1
+	</select>
+	
+	<select id="getMinId" resultType="Integer">
+		SELECT ID FROM T_TRANSPORT_DATA WHERE EXTEND_PROP1 = 0 AND ORDER_NO IN 
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+		GROUP BY ORDER_NO
+	</select>
+	
+	<select id="delete1">
+		DELETE FROM T_TRANSPORT_DATA WHERE EXTEND_PROP1 = 0 AND ID NOT IN 
+		<foreach item="item" index="index" collection="idList"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+		AND ORDER_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</select>
+	
+	<select id="getRpDBOrderNo" resultType="String" parameterType="String">
+		SELECT ORDER_NO FROM T_TRANSPORT_DATA WHERE CREATOR_ID = #{creatorId} GROUP BY ORDER_NO HAVING COUNT(*) > 1
+	</select>
+	
+	<select id="findMoney" resultType="String" parameterType="String">
+		SELECT MONEY FROM T_TRANSPORT_DATA WHERE ORDER_NO = #{orderNo}
+	</select>
+	
+	<select id="delete2">
+		DELETE FROM T_TRANSPORT_DATA WHERE EXTEND_PROP1 = 0 AND ORDER_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</select>
+	
+	<update id="setToOne" parameterType="Long">
+		UPDATE T_TRANSPORT_DATA SET EXTEND_PROP1 = 1 WHERE CREATOR_ID = #{creatorId} AND EXTEND_PROP1 = 0
+	</update>
+	
+	<delete id="deleteZero" parameterType="Long">
+		DELETE FROM T_TRANSPORT_DATA WHERE EXTEND_PROP1 = 0 AND CREATOR_ID = #{creatorId}
+	</delete>
+	
+	<delete id="deleteInfoById" parameterType="String">
+		DELETE FROM T_TRANSPORT_DATA WHERE ID = #{id}
+	</delete>
+	
+	<delete id="deleteInfoByIds">
+		DELETE FROM T_TRANSPORT_DATA WHERE ID IN
+		<foreach collection="ids" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<delete id="deleteMoreByOrderNo">
+		DELETE FROM T_TRANSPORT_DATA WHERE ORDER_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<select id="getTransportList" parameterType="java.util.List" resultType="Transport" resultMap="transportResultMap">
+		SELECT ORDER_NO, TRUEPAY FROM T_TRANSPORT_DATA WHERE ORDER_NO IN 
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</select>
+	
+	<select id="getReferAndPay" parameterType="java.util.List" resultType="Transport" resultMap="transportResultMap">
+		SELECT REFERENCE_NO, SUM(TRUEPAY) AS TRUEPAY FROM T_TRANSPORT_DATA WHERE REFERENCE_NO IN 
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+		GROUP BY REFERENCE_NO
+	</select>
+	
+	
+	<select id="exprot2Excel" parameterType="map" resultType="Transport" resultMap="transportResultMap">
+		SELECT ID, ORDER_DATE, PROJECT, START_CITY, END_CITY, SUPPLIER, CUSTOMER, DELIVERY, ORDER_NO, TRANS_NO, RECEIPT_DATE, 
+				TERMINAL_NO, REFERENCE_NO, PAYMENTS_DATE, PAYMENTS_TYPE, PAYMENTS_CARD, TRUEPAY, MONEY, REMARKS, EXTEND_PROP1 
+		FROM T_TRANSPORT_DATA WHERE 1=1
+		<if test="creatorId != 1 and creatorId != 34 and creatorId != 35 and creatorId != 36 and creatorId != 37 and creatorId != 16 and creatorId != 17 and creatorId != 50 and creatorId != '' and creatorId != null">
+           	AND CREATOR_ID = #{creatorId}
+        </if>
+		<if test="project != null">
+	    	AND PROJECT LIKE CONCAT('%',#{project},'%' )
+	  	</if>
+		<if test="supplier != null">
+	    	AND SUPPLIER LIKE CONCAT('%',#{supplier},'%' )
+	  	</if>
+           <if test="customer != null">
+	    	AND CUSTOMER LIKE CONCAT('%',#{customer},'%' )
+	  	</if>
+           <if test="orderNo != null">
+	    	AND ORDER_NO LIKE CONCAT('%',#{orderNo},'%' )
+	  	</if>
+           <if test="transNo != null">
+	    	AND TRANS_NO LIKE CONCAT('%',#{transNo},'%' )
+	  	</if>
+	  	<if test="orderBeginTime != null">
+			AND ORDER_DATE &gt;= #{orderBeginTime}
+		</if>
+		<if test="orderEndTime != null">
+			AND ORDER_DATE &lt;= #{orderEndTime}
+		</if>
+	  	<if test="receiptBeginTime != null">
+			AND RECEIPT_DATE &gt;= #{receiptBeginTime}
+		</if>
+		<if test="receiptEndTime != null">
+			AND RECEIPT_DATE &lt;= #{receiptEndTime}
+		</if>
+	  	<if test="paymentsBeginTime != null">
+			AND PAYMENTS_DATE &gt;= #{paymentsBeginTime}
+		</if>
+		<if test="paymentsEndTime != null">
+			AND PAYMENTS_DATE &lt;= #{paymentsEndTime}
+		</if>
+		<if test="terminalNo != null">
+	    	AND TERMINAL_NO LIKE CONCAT('%',#{terminalNo},'%' )
+	  	</if>
+	  	<if test="referenceNo != null">
+	    	AND REFERENCE_NO LIKE CONCAT('%',#{referenceNo},'%' )
+	  	</if>
+	  	<if test="sortOrder != null">
+	    	ORDER BY ${sortOrder}
+	  	</if>
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+	
+	<select id="exprotPageData" parameterType="Map" resultType="Map" >
+		SELECT MAX(ID) 'MAX',MIN(ID) 'MIN',COUNT(ID) 'COUNT' FROM T_TRANSPORT_DATA WHERE 1=1
+        <if test="creatorId != 1 and creatorId != 34 and creatorId != 35 and creatorId != 36 and creatorId != 37 and creatorId != 16 and creatorId != 17 and creatorId != 50 and creatorId != '' and creatorId != null">
+           	AND CREATOR_ID = #{creatorId}
+        </if>
+		<if test="project != null">
+	    	AND PROJECT LIKE CONCAT('%',#{project},'%' )
+	  	</if>
+		<if test="supplier != null">
+	    	AND SUPPLIER LIKE CONCAT('%',#{supplier},'%' )
+	  	</if>
+           <if test="customer != null">
+	    	AND CUSTOMER LIKE CONCAT('%',#{customer},'%' )
+	  	</if>
+           <if test="orderNo != null">
+	    	AND ORDER_NO LIKE CONCAT('%',#{orderNo},'%' )
+	  	</if>
+           <if test="transNo != null">
+	    	AND TRANS_NO LIKE CONCAT('%',#{transNo},'%' )
+	  	</if>
+	  	<if test="orderBeginTime != null">
+			AND ORDER_DATE &gt;= #{orderBeginTime}
+		</if>
+		<if test="orderEndTime != null">
+			AND ORDER_DATE &lt;= #{orderEndTime}
+		</if>
+	  	<if test="receiptBeginTime != null">
+			AND RECEIPT_DATE &gt;= #{receiptBeginTime}
+		</if>
+		<if test="receiptEndTime != null">
+			AND RECEIPT_DATE &lt;= #{receiptEndTime}
+		</if>
+	  	<if test="paymentsBeginTime != null">
+			AND PAYMENTS_DATE &gt;= #{paymentsBeginTime}
+		</if>
+		<if test="paymentsEndTime != null">
+			AND PAYMENTS_DATE &lt;= #{paymentsEndTime}
+		</if>
+		<if test="terminalNo != null">
+	    	AND TERMINAL_NO LIKE CONCAT('%',#{terminalNo},'%' )
+	  	</if>
+	  	<if test="referenceNo != null">
+	    	AND REFERENCE_NO LIKE CONCAT('%',#{referenceNo},'%' )
+	  	</if>
+	</select>
+	
+	<insert id="importLanPiecesReport"  parameterType="java.util.List">
+		<selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+	  		SELECT LAST_INSERT_ID()
+	  	</selectKey>
+		insert into T_TRANSPORT_DATA (
+			 PROJECT,ORDER_NO,TRANS_NO,SUPPLIER,
+			 START_CITY,CUSTOMER,END_CITY,TRUEPAY,
+			 ORDER_DATE,RECEIPT_DATE,DELIVERY,CREATOR_ID ,CREATOR ,CREATED_TIME
+		)
+		values 
+			<foreach collection="listMap" item="item"  separator=","  >
+				(#{item.owner},#{item.orderNo},#{item.waybill},#{item.supplier},
+	        	 #{item.startCity},#{item.receiver},#{item.aimCity},#{item.collectionOfTradeCharges},
+	        	 #{item.createDate},#{item.arriveTime},#{item.collectionOfTradeCharges},#{creatorId},#{creator},#{createdTime}) 
+			</foreach>
+	</insert>
+	<select id="deleteLanPiecesReport"  parameterType="java.util.List" resultMap="transportResultMap">
+		select ORDER_NO FROM T_TRANSPORT_DATA WHERE ORDER_NO IN
+			<foreach collection="listMap" item="item"  separator="," open="(" close=")"  >
+				 #{item.orderNo}  
+			</foreach>
+	</select>
+	
+	<insert id="importOutboundSummary"  parameterType="java.util.List">
+		<selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+	  		SELECT LAST_INSERT_ID()
+	  	</selectKey>
+		insert into T_TRANSPORT_DATA (
+			PROJECT,ORDER_NO,TRANS_NO,CUSTOMER,SUPPLIER,
+			START_CITY,END_CITY,TRUEPAY,
+			ORDER_DATE,RECEIPT_DATE,DELIVERY,CREATOR_ID ,CREATOR ,CREATED_TIME
+		)
+		values 
+			<foreach collection="listMap" item="item"  separator=","  >
+				(#{item.owner},
+				 #{item.orderNo},
+				 #{item.waybill},
+				 #{item.customent},
+				 #{item.supplier},
+	        	 '南京',
+	        	 #{item.city},
+	        	 #{item.collectionOfTradeCharges},
+	        	 #{item.createOrderDate},
+	        	 #{item.signInTime},
+	        	 #{item.collectionOfTradeCharges},#{creatorId},#{creator},#{createdTime}) 
+			</foreach>
+	</insert>
+	
+	<select id="deleteOutboundSummary"  parameterType="java.util.List" resultMap="transportResultMap">
+		select ORDER_NO FROM T_TRANSPORT_DATA WHERE ORDER_NO IN
+			<foreach collection="listMap" item="item"  separator="," open="(" close=")"  >
+				 #{item.orderNo}  
+			</foreach>
+	</select>
+</mapper>

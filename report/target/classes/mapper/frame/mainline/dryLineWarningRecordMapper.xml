@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="com.jshuabo.reportcenter.server.dao.mainline.IDryLineWarningRecordMapper">
+	<resultMap id="dryLineWarningRecordResultMap" type="DryLineWarningRecord">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="CAR_CARD" property="carCard" jdbcType="VARCHAR" />
+		<result column="CAR_NO" property="carNo" jdbcType="VARCHAR" />
+		<result column="BALANCE" property="balance" jdbcType="DOUBLE" />
+		<result column="WARNING" property="warning" jdbcType="VARCHAR" />
+		<result column="EXTEND_PROP1" property="extendProp1" jdbcType="VARCHAR" />
+		<result column="EXTEND_PROP2" property="extendProp2" jdbcType="VARCHAR" />
+		<result column="EXTEND_PROP3" property="extendProp3" jdbcType="VARCHAR" />
+		<result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+		<result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+		<result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		ID, car_card, car_no, balance, warning, EXTEND_PROP1,
+		EXTEND_PROP2,
+		EXTEND_PROP3,
+		CREATOR_ID, CREATOR, CREATED_TIME,
+		LAST_OPERATOR_ID, LAST_OPERATOR,
+		LAST_OPERATED_TIME
+	</sql>
+
+	<select id="page" parameterType="Map" resultMap="dryLineWarningRecordResultMap">
+		SELECT ID, CAR_CARD, CAR_NO, BALANCE, WARNING, CREATOR_ID, CREATOR, CREATED_TIME
+			FROM t_dryline_warning_record WHERE 1 = 1
+			<if test="sortOrder != null">
+				ORDER BY ${sortOrder}
+			</if>
+			<if test="offset != null">
+				LIMIT #{offset},
+			</if>
+			<if test="rows != null">
+				#{rows}
+			</if>
+	</select>
+
+	<select id="total" parameterType="Map" resultType="Long">
+		SELECT count(1) FROM t_dryline_warning_record WHERE 1 = 1
+	</select>
+
+</mapper>

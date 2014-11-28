@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+                     http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+                     http://www.springframework.org/schema/context
+                     http://www.springframework.org/schema/context/spring-context-3.1.xsd
+                     http://www.springframework.org/schema/tx
+                     http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+                     http://www.springframework.org/schema/aop
+                     http://www.springframework.org/schema/aop/spring-aop-3.1.xsd">
+
+	<import resource="classpath:dbList.xml" />
+
+	<context:annotation-config />
+	<context:component-scan base-package="com.jshuabo.*.server.dao" />
+
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<property name="url" value="${jdbc.url}" /> <!-- 基本属性 url、user、password -->
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="initialSize" value="${jdbc.initialSize}" /> <!-- 配置初始化大小、最小、最大 -->
+		<property name="minIdle" value="${jdbc.minIdle}" />
+		<property name="maxActive" value="${jdbc.maxActive}" />
+
+		<property name="maxWait" value="${jdbc.maxWait}" /> <!-- 配置获取连接等待超时的时间 -->
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="${jdbc.timeBetweenEvictionRunsMillis}" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="${jdbc.minEvictableIdleTimeMillis}" />
+
+		<property name="validationQuery" value="${jdbc.validationQuery}" /> <!-- 测试有效用的SQL Quer -->
+		<property name="testWhileIdle" value="${jdbc.testWhileIdle}" /> <!-- 连接空闲时测试是否有效 -->
+		<property name="testOnBorrow" value="${jdbc.testOnBorrow}" /> <!-- 获取连接时测试是否有效 -->
+		<property name="testOnReturn" value="${jdbc.testOnReturn}" /> <!-- 归还连接时是否测试有效 -->
+
+		<!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+		<!-- not for mysql -->
+		<property name="poolPreparedStatements" value="${jdbc.poolPreparedStatements}" />
+		<property name="maxPoolPreparedStatementPerConnectionSize"
+			value="${jdbc.maxPoolPreparedStatementPerConnectionSize}" />
+
+		<property name="timeBetweenLogStatsMillis" value="${jdbc.timeBetweenLogStatsMillis}" />
+		<property name="removeAbandoned" value="${jdbc.removeAbandoned}" /> <!-- 打开removeAbandoned功能 not recommend -->
+		<property name="removeAbandonedTimeout" value="${jdbc.removeAbandonedTimeout}" /> <!-- 1800秒，也就是30分钟 -->
+		<property name="logAbandoned" value="${jdbc.logAbandoned}" /> <!-- 关闭abanded连接时输出错误日志 -->
+
+		<property name="ConnectionErrorRetryAttempts" value="${jdbc.ConnectionErrorRetryAttempts}" /> <!-- 连接出错时重试次数 -->
+		<property name="DefaultAutoCommit" value="${jdbc.DefaultAutoCommit}" /> <!-- AutoCommit设置 -->
+		<property name="QueryTimeout" value="${jdbc.QueryTimeout}" /> <!-- Statement执行超时时间 -->
+		<property name="filters" value="${jdbc.filters}" /> <!-- 连接池扩展 配置监控统计拦截的filters -->
+		<property name="useGloalDataSourceStat" value="${jdbc.useGloalDataSourceStat}" />
+		<property name="proxyFilters">
+			<list>
+				<ref bean="log-filter" />
+				<ref bean="stat-filter" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+		<property name="mapperLocations" value="classpath*:mapper/frame/**/*.xml" />
+	</bean>
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+		<property name="basePackage" value="com.jshuabo.*.server.dao" />
+	</bean>
+
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<aop:aspectj-autoproxy proxy-target-class="false"/>
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<bean id="druid-stat-interceptor"
+		class="com.alibaba.druid.support.spring.stat.DruidStatInterceptor">
+	</bean>
+
+	<bean id="druid-stat-pointcut" class="org.springframework.aop.support.JdkRegexpMethodPointcut"
+		scope="prototype">
+		<property name="patterns">
+			<list>
+				<value>com.jshuabo.*.server.service.*</value>
+				<value>com.jshuabo.*.server.dao.*</value>
+			</list>
+		</property>
+	</bean>
+	<aop:config>
+		<aop:advisor advice-ref="druid-stat-interceptor"
+			pointcut-ref="druid-stat-pointcut" />
+	</aop:config>
+
+	<bean id="log-filter" class="com.alibaba.druid.filter.logging.Log4jFilter">
+		<property name="statementExecutableSqlLogEnable" value="${jdbc.statementExecutableSqlLogEnable}" />
+		<property name="resultSetLogEnabled" value="${jdbc.resultSetLogEnabled}" />
+	</bean>
+	<bean id="stat-filter" class="com.alibaba.druid.filter.stat.StatFilter">
+		<property name="slowSqlMillis" value="${jdbc.slowSqlMillis}" />
+		<property name="logSlowSql" value="${jdbc.logSlowSql}" />
+	</bean>
+	
+	<beans profile="development">
+		<context:property-placeholder location="classpath:jdbc_development.properties" ignore-unresolvable="true" />  
+	</beans>
+	<beans profile="test">
+		<context:property-placeholder location="classpath:jdbc_test.properties" ignore-unresolvable="true" />  
+	</beans>
+	<beans profile="production">
+		<context:property-placeholder location="classpath:jdbc_production.properties" ignore-unresolvable="true" />  
+	</beans>
+</beans>

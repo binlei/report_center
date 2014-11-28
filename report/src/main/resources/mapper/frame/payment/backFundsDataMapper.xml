@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.payment.IBackFundsDataMapper">
+	<resultMap type="BackFundsData" id="backFundsDataResultMap">
+		<id property="id" column="ID" />
+		<result property="settleNo" column="SETTLE_NO" />
+		<result property="backFundsMoney" column="BACKFUNDS_MONEY" />
+		<result property="backFundsDate" column="BACKFUNDS_DATE" />
+		<result property="backFundsBank" column="BACKFUNDS_BANK" />
+		<result property="information" column="INFORMATION" />
+		<result column="ADJUST_MONEY" property="adjustMoney" jdbcType="DOUBLE" />
+		<result column="ADJUST_DATE" property="adjustDate"/>
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+		<result property="creatorId" column="CREATOR_ID" />
+		<result property="creator" column="CREATOR" />
+		<result property="createdTime" column="CREATED_TIME" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_BACKFUNDS_DATA;
+			CREATE TABLE T_BACKFUNDS_DATA
+			(
+				ID INT(40) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				SETTLE_NO VARCHAR(40) NOT NULL,
+				BACKFUNDS_MONEY DOUBLE,
+				BACKFUNDS_DATE DATE,
+				BACKFUNDS_BANK VARCHAR(40),
+				INFORMATION VARCHAR(400),
+				EXTEND_PROP1 VARCHAR(200),
+			  	EXTEND_PROP2 VARCHAR(200),
+			  	CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX SETTLE_NO_INDEX(SETTLE_NO)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="page" parameterType="map" resultType="BackFundsData" resultMap="backFundsDataResultMap">
+		SELECT ID, SETTLE_NO, ROUND(BACKFUNDS_MONEY, 2) BACKFUNDS_MONEY, BACKFUNDS_DATE, BACKFUNDS_BANK, INFORMATION ,ADJUST_MONEY,ADJUST_DATE FROM T_BACKFUNDS_DATA WHERE 1=1
+		<if test="settleNo != null">
+   			AND SETTLE_NO LIKE CONCAT('%',#{settleNo},'%' )
+ 		</if>
+ 		<if test="status != null">
+	 		<if test="status == 1">
+	   			AND INFORMATION IS NOT NULL
+	 		</if>
+	 		<if test="status == 0">
+	   			AND INFORMATION IS NULL
+	 		</if>
+ 		</if>
+ 		<if test="sortOrder != null">
+	    	ORDER BY ${sortOrder}
+	  	</if>
+        LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+         SELECT count(ID) FROM T_BACKFUNDS_DATA WHERE 1=1
+		<if test="settleNo != null">
+			AND SETTLE_NO LIKE CONCAT('%',#{settleNo},'%' )
+		</if>
+	</select>
+	
+	<insert id="save" parameterType="java.util.List">
+		INSERT INTO T_BACKFUNDS_DATA (
+	        SETTLE_NO,
+	        BACKFUNDS_MONEY,
+	        BACKFUNDS_DATE,
+	        BACKFUNDS_BANK,
+	        EXTEND_PROP1,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES 
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.settleNo},#{item.backFundsMoney},#{item.backFundsDate},#{item.backFundsBank},
+			 #{item.extendProp1},#{item.creatorId},#{item.creator},#{item.createdTime})
+		</foreach>
+	</insert>
+	
+	<select id="getAllSettleNo" resultType="String" >
+         SELECT SETTLE_NO FROM T_BACKFUNDS_DATA GROUP BY SETTLE_NO HAVING COUNT(*) > 1
+	</select>
+	
+	<select id="dataDelete" parameterType="String" >
+         DELETE FROM T_BACKFUNDS_DATA WHERE ID = #{id}
+	</select>
+	
+	<delete id="deleteMore">
+		DELETE FROM T_BACKFUNDS_DATA WHERE SETTLE_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<select id="getInfoBySettleNo" parameterType="String" resultType="String">
+		SELECT INFORMATION FROM T_BACKFUNDS_DATA WHERE SETTLE_NO = #{settleNo}
+	</select>
+	
+	<update id="saveInfo" parameterType="map">
+		UPDATE T_BACKFUNDS_DATA SET INFORMATION = #{information} WHERE SETTLE_NO = #{settleNo}
+	</update>
+	
+	<update id="saveMoreInfo" parameterType="map">
+		UPDATE T_BACKFUNDS_DATA SET INFORMATION = #{information} WHERE SETTLE_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach>
+	</update>
+	
+	<select id="noInWithHold" resultType="String">
+		SELECT SETTLE_NO FROM T_BACKFUNDS_DATA WHERE EXTEND_PROP1 = 0 AND SETTLE_NO NOT IN (SELECT SETTLE_NO FROM T_INVOICE_DATA) 
+	</select>
+	
+	<delete id="delete">
+		DELETE FROM T_BACKFUNDS_DATA WHERE EXTEND_PROP1 = 0 AND SETTLE_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<update id="setToOne" parameterType="Long">
+		UPDATE T_BACKFUNDS_DATA SET EXTEND_PROP1 = 1 WHERE EXTEND_PROP1 = 0
+	</update>
+	
+	<select id="noInWithInvo" resultType="String">
+		SELECT SETTLE_NO FROM T_BACKFUNDS_DATA WHERE EXTEND_PROP1 = 0 AND SETTLE_NO NOT IN (SELECT SETTLE_NO FROM T_INVOICE_DATA) 
+	</select>
+	
+	<select id="getBackBySettleNo" parameterType="String" resultType="BackFundsData" resultMap="backFundsDataResultMap">
+		SELECT * FROM T_BACKFUNDS_DATA WHERE SETTLE_NO = #{settleNo}
+	</select>
+	
+	
+	<!-- 增加回款 -->
+	<update id="updateInfo" parameterType="map">
+		UPDATE T_BACKFUNDS_DATA 
+				SET 
+					BACKFUNDS_MONEY = #{backFundsMoney}, 
+					BACKFUNDS_DATE = #{backFundsDate}, 
+					BACKFUNDS_BANK = #{backFundsBank},
+					ADJUST_MONEY = #{adjustMoney},
+					ADJUST_DATE = #{adjustDate}			
+			WHERE SETTLE_NO = #{settleNo}
+	</update>
+	
+	<insert id="saveInfo1" parameterType="map">
+		INSERT INTO T_BACKFUNDS_DATA (
+	        SETTLE_NO,
+	        BACKFUNDS_MONEY,
+	        BACKFUNDS_DATE,
+	        BACKFUNDS_BANK,
+	        ADJUST_MONEY,
+	        ADJUST_DATE,
+	        EXTEND_PROP1,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES (
+			#{settleNo},
+			#{backFundsMoney},
+			#{backFundsDate},
+			#{backFundsBank},
+			#{adjustMoney},#{adjustDate},
+			#{extendProp1},
+			#{creatorId},
+			#{creator},
+			#{createdTime}
+		)
+	</insert>
+	
+	<!-- 创建临时表 -->
+	<select id="createTempTable">
+		CREATE TEMPORARY TABLE
+			IF NOT EXISTS t_back_money_temp (
+				`ID` BIGINT (20) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+				`SETTLE_NO` VARCHAR (40) COLLATE utf8_bin NOT NULL,
+				`BACKFUNDS_MONEY` DOUBLE DEFAULT NULL,
+				`BACKFUNDS_DATE` date DEFAULT NULL,
+				`BACKFUNDS_BANK` VARCHAR (40) COLLATE utf8_bin DEFAULT NULL,
+				`INFORMATION` VARCHAR (400) COLLATE utf8_bin DEFAULT NULL,
+				`ADJUST_MONEY` DOUBLE DEFAULT NULL,
+				`ADJUST_DATE` date DEFAULT NULL,
+				`EXTEND_PROP1` VARCHAR (200) COLLATE utf8_bin DEFAULT NULL,
+				`EXTEND_PROP2` VARCHAR (200) COLLATE utf8_bin DEFAULT NULL,
+				`CREATOR_ID` BIGINT (20) DEFAULT NULL,
+				`CREATOR` VARCHAR (255) COLLATE utf8_bin DEFAULT NULL,
+				`CREATED_TIME` datetime DEFAULT NULL,
+				`LAST_OPERATOR_ID` BIGINT (20) DEFAULT NULL,
+				`LAST_OPERATOR` VARCHAR (255) COLLATE utf8_bin DEFAULT NULL,
+				`LAST_OPERATED_TIME` datetime DEFAULT NULL 
+			)
+	</select>
+	
+	<!-- 数据插入临时表 -->
+	<insert id="insertTempTable">
+		INSERT INTO t_back_money_temp (SETTLE_NO, ADJUST_MONEY ,ADJUST_DATE) VALUES 
+		<foreach collection="lis" item="item" index="index" separator="," >
+			(#{item.settleNo}, #{item.adjustMoney} ,#{item.adjustDate})
+		</foreach>
+	</insert>
+	
+	<!-- 将临时表数据 更新到 正式表 -->
+	<update id="updateBackMoney">
+		 UPDATE t_backfunds_data ot,
+					(SELECT * FROM t_back_money_temp newtable WHERE EXISTS 
+							(SELECT * FROM t_backfunds_data oldtable WHERE newtable.SETTLE_NO = oldtable.SETTLE_NO )) t 
+
+				SET 
+					ot.ADJUST_MONEY = t.ADJUST_MONEY , ot.ADJUST_DATE = t.ADJUST_DATE
+					
+				WHERE ot.SETTLE_NO = t.SETTLE_NO
+	</update>
+	
+	<!-- drop temp table -->
+	<delete id="dropTempTable">
+		DROP TEMPORARY TABLE IF EXISTS t_back_money_temp
+	</delete>
+	
+</mapper>

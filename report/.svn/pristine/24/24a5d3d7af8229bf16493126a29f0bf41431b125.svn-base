@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.transport.IServiceChargeMapper">
+	<resultMap type="ServiceChargeData" id="serviceChargeDataResultMap">
+		<id property="id" column="ID" />
+		<result property="category" column="CATEGORY" />
+		<result property="kind" column="KIND" />
+		<result property="charge" column="CHARGE" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+		<result property="extendProp3" column="EXTEND_PROP3" />
+		<result property="creatorId" column="CREATOR_ID" />
+		<result property="creator" column="CREATOR" />
+		<result property="createdTime" column="CREATED_TIME" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_CHARGE_DATA;
+			CREATE TABLE T_CHARGE_DATA
+			(
+				ID INT(40) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				CATEGORY VARCHAR(80),
+				KIND VARCHAR(80),
+				CHARGE DOUBLE,
+				EXTEND_PROP1 VARCHAR(255),
+			  	EXTEND_PROP2 VARCHAR(255),
+				EXTEND_PROP3 VARCHAR(255),
+			  	CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX CATEGORY_INDEX(CATEGORY),
+				INDEX KIND_INDEX(KIND)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="page" parameterType="map" resultType="ServiceChargeData" resultMap="serviceChargeDataResultMap">
+		SELECT ID, CATEGORY, KIND FROM T_CHARGE_DATA WHERE 1=1
+		<if test="category != null">
+	    	AND CATEGORY LIKE CONCAT('%',#{category},'%' )
+	  	</if>
+		<if test="kind != null">
+	    	AND KIND LIKE CONCAT('%',#{kind},'%' )
+	  	</if>
+	  	<if test="sortOrder != null">
+	    	ORDER BY ${sortOrder}
+	  	</if>
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+		SELECT COUNT(ID) FROM T_CHARGE_DATA WHERE 1=1
+		<if test="category != null">
+	    	AND CATEGORY LIKE CONCAT('%',#{category},'%' )
+	  	</if>
+		<if test="kind != null">
+	    	AND KIND LIKE CONCAT('%',#{kind},'%' )
+	  	</if>
+	</select>
+	
+	<insert id="save" parameterType="java.util.List">
+		INSERT INTO T_CHARGE_DATA (
+	        CATEGORY,
+			KIND,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES  
+		<foreach collection="list" item="item" index="index" separator="," >
+        	(#{item.category},#{item.kind},
+        	 #{item.creatorId},#{item.creator},#{item.createdTime}) 
+    	</foreach> 
+	</insert>
+	
+	<select id="getChargeInfo" parameterType="String" resultType="ServiceChargeData" resultMap="serviceChargeDataResultMap">
+		SELECT ID, CATEGORY, KIND FROM T_CHARGE_DATA WHERE ID = #{id}
+	</select>
+	
+	<insert id="saveInfo" parameterType="map">
+		INSERT INTO T_CHARGE_DATA (
+	        CATEGORY,
+			KIND,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES  
+       	(#{category},#{kind},
+       	 #{creatorId},#{creator},#{createdTime}) 
+	</insert>
+	
+	<insert id="updateInfo" parameterType="map">
+		UPDATE T_CHARGE_DATA SET CATEGORY = #{category}, KIND = #{kind} WHERE ID = #{id}
+	</insert>
+	
+	<delete id="deleteCharge" parameterType="String">
+		DELETE FROM T_CHARGE_DATA WHERE ID = #{id}
+	</delete>
+	
+	<select id="getCategory" parameterType="String" resultType="String">
+		SELECT CATEGORY FROM T_CHARGE_DATA WHERE KIND = #{kind}
+	</select>
+	
+	<select id="getChargeList" parameterType="java.util.List" resultType="ServiceChargeData" resultMap="serviceChargeDataResultMap">
+		SELECT CATEGORY, KIND FROM T_CHARGE_DATA WHERE KIND IN 
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</select>
+</mapper>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.finance.IDeliveryDataMapper">
+	<resultMap type="DeliveryData" id="deliveryDataResultMap">
+		<id property="id" column="ID" />
+		<result property="orderLot" column="ORDER_LOT" />
+		<result property="serialNo" column="SERIAL_NO" />
+		<result property="itemCode" column="ITEM_CODE" />
+		<result property="customerName" column="CUSTOMER_NAME" />
+		<result property="stationAddress" column="STATION_ADDRESS" />
+		<result property="deliveryDate" column="DELIVERY_DATE" />
+		<result property="quantity" column="QUANTITY" />
+		<result property="hallProperty" column="HALL_PROPERTY" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+		<result property="creatorId" column="CREATOR_ID" />
+		<result property="creator" column="CREATOR" />
+		<result property="createdTime" column="CREATED_TIME" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_DELIVERY_DATA;
+			CREATE TABLE T_DELIVERY_DATA
+			(
+				ID INT(40) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				ORDER_LOT VARCHAR(40) NOT NULL,
+				SERIAL_NO VARCHAR(40) NOT NULL,
+				ITEM_CODE VARCHAR(255),
+				CUSTOMER_NAME VARCHAR(255),
+				STATION_ADDRESS VARCHAR(255),
+				DELIVERY_DATE DATE,
+				QUANTITY DOUBLE DEFAULT 0,
+				HALL_PROPERTY VARCHAR(20),
+				EXTEND_PROP1 VARCHAR(200),
+			  	EXTEND_PROP2 VARCHAR(200),
+			  	CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX SERIAL_NO_INDEX(SERIAL_NO),
+				INDEX ORDER_LOT_INDEX(ORDER_LOT),
+				INDEX STATION_ADDRESS_INDEX(STATION_ADDRESS)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+
+	<select id="page" parameterType="map" resultType="DeliveryData" resultMap="deliveryDataResultMap">
+            SELECT * FROM T_DELIVERY_DATA WHERE 1=1
+            <if test="creatorId != 1">
+            	AND CREATOR_ID = #{creatorId}
+            </if>
+			<if test="serialNo != null">
+		    	AND SERIAL_NO LIKE CONCAT('%',#{serialNo},'%' )
+		  	</if>
+			<if test="itemCode != null">
+		    	AND ITEM_CODE LIKE CONCAT('%',#{itemCode},'%' )
+		  	</if>
+            <if test="sortOrder != null">
+		    	ORDER BY ${sortOrder}
+		  	</if>
+            LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+            SELECT count(ID) FROM T_DELIVERY_DATA WHERE 1=1
+            <if test="creatorId != 1">
+            	AND CREATOR_ID = #{creatorId}
+            </if>
+			<if test="serialNo != null">
+		    	AND SERIAL_NO LIKE CONCAT('%',#{serialNo},'%' )
+		  	</if>
+			<if test="itemCode != null">
+		    	AND ITEM_CODE LIKE CONCAT('%',#{itemCode},'%' )
+		  	</if>
+	</select>
+	
+	<select id="loadAll" parameterType="Long" resultType="String">
+        <![CDATA[
+            SELECT SERIAL_NO FROM T_DELIVERY_DATA WHERE CREATOR_ID = #{creatorId} GROUP BY SERIAL_NO HAVING COUNT(*) > 1
+        ]]>
+	</select>
+	
+ 	<select id="getNumOfSerialNo" resultType="Long" parameterType="String">
+        <![CDATA[
+            SELECT COUNT(ID) FROM T_DELIVERY_DATA WHERE SERIAL_NO = #{serialNo} AND EXTEND_PROP1 = 1
+        ]]>
+	</select>
+	
+	<insert id="save" parameterType="java.util.List">
+		INSERT INTO T_DELIVERY_DATA (
+	        ORDER_LOT,
+	        SERIAL_NO,
+	        ITEM_CODE,
+	        CUSTOMER_NAME,
+	        STATION_ADDRESS,
+	        DELIVERY_DATE,
+	        QUANTITY,
+	        HALL_PROPERTY,
+	        EXTEND_PROP1,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES  
+		<foreach collection="list" item="item" index="index" separator="," >
+        	(#{item.orderLot},#{item.serialNo},#{item.itemCode},
+        	 #{item.customerName},#{item.stationAddress},#{item.deliveryDate},
+        	 #{item.quantity},#{item.hallProperty},#{item.extendProp1},
+        	 #{item.creatorId},#{item.creator},#{item.createdTime}) 
+    	</foreach> 
+    	
+	</insert>
+	
+	<delete id="deliveryDataDelete" parameterType="String">
+		DELETE FROM T_DELIVERY_DATA WHERE ID = #{id}
+	</delete>
+	
+	<delete id="deleteMore">
+		DELETE FROM T_DELIVERY_DATA WHERE SERIAL_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<delete id="delete"  parameterType="map">
+		DELETE FROM T_DELIVERY_DATA WHERE SERIAL_NO IN 
+		<foreach item="item" index="index" collection="serialNoList"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+		AND EXTEND_PROP1 = 0 AND CREATOR_ID = #{creatorId}
+	</delete>
+	
+	<update id="setToOne" parameterType="Long">
+		UPDATE T_DELIVERY_DATA SET EXTEND_PROP1 = 1 WHERE CREATOR_ID = #{creatorId}
+	</update>
+	
+	<delete id="deleteZero" parameterType="Long">
+		DELETE FROM T_DELIVERY_DATA WHERE EXTEND_PROP1 = 0 AND CREATOR_ID = #{creatorId}
+	</delete>
+	
+</mapper>

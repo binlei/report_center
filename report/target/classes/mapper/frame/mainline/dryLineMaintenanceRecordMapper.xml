@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="com.jshuabo.reportcenter.server.dao.mainline.IDryLineMaintenanceRecordMapper">
+
+	<resultMap id="DryLineMaintenanceRecordResultMap" type="DryLineMaintenanceRecord">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		
+		<result column="MAINTENANCE_DATE" property="maintenanceDate" jdbcType="DATE" />
+		<result column="MAINTENANCE_MATERIAL" property="maintenanceMaterial" jdbcType="VARCHAR" />
+		<result column="REPAIR_MATERIALS" property="repairMaterials" jdbcType="VARCHAR" />
+		<result column="QUANTITY" property="quantity" jdbcType="INTEGER" />
+		<result column="PRICE" property="price" jdbcType="DOUBLE" />
+		<result column="MAINTENANCE_MONEY" property="maintenanceMoney" jdbcType="DOUBLE" />
+		<result column="REPAIR_MONEY" property="repairMoney" jdbcType="DOUBLE" />
+		<result column="MAINTENANCE_PROJECT" property="maintenanceProject" jdbcType="VARCHAR" />
+		<result column="KM_NODE" property="kmNode" jdbcType="DOUBLE" />
+		<result column="MAINTENANCE_LOCATION" property="maintenanceLocation" jdbcType="VARCHAR" />
+		<result column="EXCEPTION" property="exception" jdbcType="VARCHAR" />
+		<result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+		<result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+		<result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+		<result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+		<result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+		<result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+		
+		<association property="dryLineCarRecord" column="CARCRAD_ID" select="com.jshuabo.reportcenter.server.dao.mainline.IDryLineCarRecordMapper.selectById"></association>
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		ID, CARCRAD_ID, MAINTENANCE_DATE, MAINTENANCE_MATERIAL, REPAIR_MATERIALS,
+		QUANTITY, PRICE,
+		MAINTENANCE_MONEY, REPAIR_MONEY, MAINTENANCE_PROJECT, KM_NODE, MAINTENANCE_LOCATION,EXCEPTION,
+		CREATOR_ID, CREATOR, CREATED_TIME, LAST_OPERATOR_ID, LAST_OPERATOR,
+		LAST_OPERATED_TIME
+	</sql>
+
+	<select id="page" parameterType="Map" resultMap="DryLineMaintenanceRecordResultMap">
+		select <include refid="Base_Column_List" /> from t_dryline_maintenance_record where 1 = 1
+		<if test="beginTime != null">
+			AND MAINTENANCE_DATE &gt;= #{beginTime}
+		</if>
+		<if test="endTime != null">
+			AND MAINTENANCE_DATE &lt;= #{endTime}
+		</if>
+		<if test="plateNumber != null">
+			AND CARCRAD_ID = #{plateNumber}
+		</if>
+		<if test="sortOrder != null">
+			ORDER BY ${sortOrder}
+		</if>
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+
+	<select id="total" parameterType="Map" resultType="java.lang.Long">
+		select count(1) from t_dryline_maintenance_record where 1 = 1 
+			<if test="beginTime != null">
+				AND MAINTENANCE_DATE &gt;= #{beginTime}
+			</if>
+			<if test="endTime != null">
+				AND MAINTENANCE_DATE &lt;= #{endTime}
+			</if>
+			<if test="plateNumber != null">
+				AND CARCRAD_ID = #{plateNumber}
+			</if>
+	</select>
+
+	<select id="selectById" resultMap="DryLineMaintenanceRecordResultMap" parameterType="java.lang.Long">
+		select <include refid="Base_Column_List" /> from t_dryline_maintenance_record
+			where id = #{id,jdbcType=BIGINT}
+	</select>
+
+	<delete id="deleteByIds" parameterType="List">
+		DELETE FROM t_dryline_maintenance_record WHERE ID IN
+		<foreach item="item" index="index" collection="ids" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<insert id="insert" parameterType="Map" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+		insert into t_dryline_maintenance_record
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="carCardId != null">
+				CARCRAD_ID,
+			</if>
+			<if test="maintenanceDate != null">
+				maintenance_Date,
+			</if>
+			<if test="maintenanceMaterial != null">
+				maintenance_Material,
+			</if>
+			<if test="repairMaterials != null">
+				repair_Materials,
+			</if>
+			<if test="quantity != null">
+				quantity,
+			</if>
+			<if test="price != null">
+				price,
+			</if>
+			<if test="maintenanceMoney != null">
+				maintenance_Money,
+			</if>
+			<if test="repairMoney != null">
+				repair_Money,
+			</if>
+			<if test="maintenanceProject != null">
+				maintenance_Project,
+			</if>
+			<if test="kmNode != null">
+				km_Node,
+			</if>
+			<if test="maintenanceLocation != null">
+				maintenance_Location,
+			</if>
+			<if test="exception != null">
+				exception,
+			</if>
+				CREATOR_ID,
+				CREATOR,
+				CREATED_TIME
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="carCardId != null">
+				#{carCardId,jdbcType=BIGINT},
+			</if>
+			<if test="maintenanceDate != null">
+				#{maintenanceDate,jdbcType=DATE},
+			</if>
+			<if test="maintenanceMaterial != null">
+				#{maintenanceMaterial,jdbcType=VARCHAR},
+			</if>
+			<if test="repairMaterials != null">
+				#{repairMaterials,jdbcType=VARCHAR},
+			</if>
+			<if test="quantity != null">
+				#{quantity,jdbcType=INTEGER},
+			</if>
+			<if test="price != null">
+				#{price,jdbcType=DOUBLE},
+			</if>
+			<if test="maintenanceMoney != null">
+				#{maintenanceMoney,jdbcType=DOUBLE},
+			</if>
+			<if test="repairMoney != null">
+				#{repairMoney,jdbcType=DOUBLE},
+			</if>
+			<if test="maintenanceProject != null">
+				#{maintenanceProject,jdbcType=VARCHAR},
+			</if>
+			<if test="kmNode != null">
+				#{kmNode,jdbcType=DOUBLE},
+			</if>
+			<if test="maintenanceLocation != null">
+				#{maintenanceLocation,jdbcType=VARCHAR},
+			</if>
+			<if test="exception != null">
+				#{exception,jdbcType=VARCHAR},
+			</if>
+				#{creatorId,jdbcType=BIGINT},
+				#{creator,jdbcType=VARCHAR},
+				#{createdTime,jdbcType=TIMESTAMP}
+		</trim>
+	</insert>
+
+	<update id="update" parameterType="Map">
+		update t_dryline_maintenance_record
+		<set>
+			<if test="carCardId != null">
+				carcrad_id = #{carCardId,jdbcType=BIGINT},
+			</if>
+			<if test="maintenanceDate != null">
+				maintenance_Date = #{maintenanceDate,jdbcType=DATE},
+			</if>
+			<if test="maintenanceMaterial != null">
+				maintenance_Material = #{maintenanceMaterial,jdbcType=VARCHAR},
+			</if>
+			<if test="repairMaterials != null">
+				repair_Materials = #{repairMaterials,jdbcType=VARCHAR},
+			</if>
+			<if test="quantity != null">
+				quantity = #{quantity,jdbcType=INTEGER},
+			</if>
+			<if test="price != null">
+				price = #{price,jdbcType=DOUBLE},
+			</if>
+			<if test="maintenanceMoney != null">
+				maintenance_Money = #{maintenanceMoney,jdbcType=DOUBLE},
+			</if>
+			<if test="repairMoney != null">
+				repair_Money = #{repairMoney,jdbcType=DOUBLE},
+			</if>
+			<if test="maintenanceProject != null">
+				maintenance_Project = #{maintenanceProject,jdbcType=VARCHAR},
+			</if>
+			<if test="kmNode != null">
+				km_Node = #{kmNode,jdbcType=DOUBLE},
+			</if>
+			<if test="maintenanceLocation != null">
+				maintenance_Location = #{maintenanceLocation,jdbcType=VARCHAR},
+			</if>
+			<if test="exception != null">
+				exception = #{exception,jdbcType=VARCHAR},
+			</if>
+				LAST_OPERATOR_ID = #{lastOperatorId,jdbcType=BIGINT},
+				LAST_OPERATOR = #{lastOperator,jdbcType=VARCHAR},
+				LAST_OPERATED_TIME = #{lastOperatedTime,jdbcType=TIMESTAMP}
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+</mapper>

@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="com.jshuabo.reportcenter.server.dao.mainline.IDryLineEtccardMapper">
+	 <resultMap id="dryLineEtccardResultMap" type="DryLineEtccard" >
+			<id column="ID" property="id" jdbcType="BIGINT" />
+			<result column="ETC_CARD" property="etcCard" jdbcType="DOUBLE" />
+			<result column="CUSTOMER_NAME" property="customerName" jdbcType="DOUBLE" />
+			<result column="RECHARGE_DATE" property="rechargeDate" jdbcType="DOUBLE" />
+			<result column="RECHARGE_MONEY" property="rechargeMoney" jdbcType="DOUBLE" />
+			<result column="LAST_MONTH_BALANCE" property="lastMonthBalance" jdbcType="DOUBLE" />
+			<result column="IN_MONTH" property="inMonth" jdbcType="DOUBLE" />
+			<result column="ADJUSTMENT_AMOUNT" property="adjustmentAmount" jdbcType="DOUBLE" />
+			<result column="THE_MONTH_AVAILABLE" property="theMonthAvailable" jdbcType="DOUBLE" />
+			<result column="THE_MONTH_CONSUMPTION" property="theMonthConsumption" jdbcType="DOUBLE" />
+			<result column="BALANCE" property="balance" jdbcType="DOUBLE" />
+			<result column="EXTEND_PROP1" property="extendProp1" jdbcType="VARCHAR" />
+			<result column="EXTEND_PROP2" property="extendProp2" jdbcType="VARCHAR" />
+			<result column="EXTEND_PROP3" property="extendProp3" jdbcType="VARCHAR" />
+			   
+			<result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+			<result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+			<result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+			<result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+			<result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+			<result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+			
+			<association property="dryLineCarRecord" column="CARCARD_ID" select="com.jshuabo.reportcenter.server.dao.mainline.IDryLineCarRecordMapper.selectById"/>
+		
+	 </resultMap>
+
+	<sql id="Base_Column_List">
+		ID, ETC_CARD, CARCARD_ID, CUSTOMER_NAME,RECHARGE_DATE,RECHARGE_MONEY,
+		LAST_MONTH_BALANCE, IN_MONTH, ADJUSTMENT_AMOUNT,
+		THE_MONTH_AVAILABLE, THE_MONTH_CONSUMPTION, BALANCE, EXTEND_PROP1, EXTEND_PROP2,
+		EXTEND_PROP3, CREATOR_ID, CREATOR, CREATED_TIME, LAST_OPERATOR_ID,
+		LAST_OPERATOR,
+		LAST_OPERATED_TIME
+	</sql>
+
+	<select id="page" parameterType="map" resultType="dryLineCarRecord"
+		resultMap="dryLineEtccardResultMap">
+		SELECT ID, ETC_CARD, CARCARD_ID,
+		CUSTOMER_NAME,RECHARGE_DATE,RECHARGE_MONEY, LAST_MONTH_BALANCE,
+		IN_MONTH, ADJUSTMENT_AMOUNT,
+		THE_MONTH_AVAILABLE, THE_MONTH_CONSUMPTION, BALANCE FROM t_dryline_etccard WHERE 1=1
+		<if test="etccard != null">
+			AND ETC_CARD = #{etccard}
+		</if>
+		<if test="carcard != null">
+			AND CARCARD_ID = #{carcard}
+		</if>
+		<if test="sortOrder != null">
+			ORDER BY ${sortOrder}
+		</if>
+		<if test="offset != null">
+			LIMIT #{offset},#{rows}
+		</if>
+	</select>
+
+	<select id="total" parameterType="map" resultType="Long">
+		SELECT COUNT(1) FROM t_dryline_etccard WHERE 1=1
+		<if test="etccard != null">
+			AND ETC_CARD = #{etccard}
+		</if>
+		<if test="carcard != null">
+			AND CARCARD_ID = #{carcard}
+		</if>
+	</select>
+
+	<select id="selectById" resultMap="dryLineEtccardResultMap"
+		parameterType="java.lang.Long">
+		select
+		<include refid="Base_Column_List" />
+		from t_dryline_etccard
+		where ID = #{id,jdbcType=BIGINT}
+	</select>
+
+	<insert id="insert" parameterType="Map">
+		insert into t_dryline_etccard
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="etcCard != null">
+				ETC_CARD,
+			</if>
+			<if test="carcardId != null">
+				CARCARD_ID,
+			</if>
+			<if test="customerName != null">
+				CUSTOMER_NAME,
+			</if>
+			<if test="rechargeDate != null">
+				RECHARGE_DATE,
+			</if>
+			<if test="rechargeMoney != null">
+				RECHARGE_MONEY,
+			</if>
+			<if test="lastMonthBalance != null">
+				LAST_MONTH_BALANCE,
+			</if>
+			<if test="inMonth != null">
+				IN_MONTH,
+			</if>
+			<if test="adjustmentAmount != null">
+				ADJUSTMENT_AMOUNT,
+			</if>
+			<if test="theMonthAvailable != null">
+				THE_MONTH_AVAILABLE,
+			</if>
+			<if test="theMonthConsumption != null">
+				THE_MONTH_CONSUMPTION,
+			</if>
+			<if test="balance != null">
+				BALANCE,
+			</if>
+			<if test="extendProp1 != null">
+				EXTEND_PROP1,
+			</if>
+			<if test="extendProp2 != null">
+				EXTEND_PROP2,
+			</if>
+			<if test="extendProp3 != null">
+				EXTEND_PROP3,
+			</if>
+			<if test="creatorId != null">
+				CREATOR_ID,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createdTime != null">
+				CREATED_TIME
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="etcCard != null">
+				#{etcCard,jdbcType=DOUBLE},
+			</if>
+			<if test="carcardId != null">
+				#{carcardId,jdbcType=BIGINT},
+			</if>
+			<if test="customerName != null">
+				#{customerName,jdbcType=DOUBLE},
+			</if>
+			<if test="rechargeDate != null">
+				#{rechargeDate,jdbcType=DOUBLE},
+			</if>
+			<if test="rechargeMoney != null">
+				#{rechargeMoney,jdbcType=DOUBLE},
+			</if>
+			<if test="lastMonthBalance != null">
+				#{lastMonthBalance,jdbcType=DOUBLE},
+			</if>
+			<if test="inMonth != null">
+				#{inMonth,jdbcType=DOUBLE},
+			</if>
+			<if test="adjustmentAmount != null">
+				#{adjustmentAmount,jdbcType=DOUBLE},
+			</if>
+			<if test="theMonthAvailable != null">
+				#{theMonthAvailable,jdbcType=DOUBLE},
+			</if>
+			<if test="theMonthConsumption != null">
+				#{theMonthConsumption,jdbcType=DOUBLE},
+			</if>
+			<if test="balance != null">
+				#{balance,jdbcType=DOUBLE},
+			</if>
+			<if test="extendProp1 != null">
+				#{extendProp1,jdbcType=VARCHAR},
+			</if>
+			<if test="extendProp2 != null">
+				#{extendProp2,jdbcType=VARCHAR},
+			</if>
+			<if test="extendProp3 != null">
+				#{extendProp3,jdbcType=VARCHAR},
+			</if>
+			<if test="creatorId != null">
+				#{creatorId,jdbcType=BIGINT},
+			</if>
+			<if test="creator != null">
+				#{creator,jdbcType=VARCHAR},
+			</if>
+			<if test="createdTime != null">
+				#{createdTime,jdbcType=TIMESTAMP}
+			</if>
+		</trim>
+	</insert>
+
+	<update id="update" parameterType="Map">
+		update t_dryline_etccard
+		set ETC_CARD = #{etcCard,jdbcType=DOUBLE},
+		CARCARD_ID = #{carcardId,jdbcType=BIGINT},
+		CUSTOMER_NAME = #{customerName,jdbcType=DOUBLE},
+		RECHARGE_DATE = #{rechargeDate,jdbcType=DOUBLE},
+		RECHARGE_MONEY = #{rechargeMoney,jdbcType=DOUBLE},
+		LAST_MONTH_BALANCE = #{lastMonthBalance,jdbcType=DOUBLE},
+		IN_MONTH = #{inMonth,jdbcType=DOUBLE},
+		ADJUSTMENT_AMOUNT = #{adjustmentAmount,jdbcType=DOUBLE},
+		THE_MONTH_AVAILABLE = #{theMonthAvailable,jdbcType=DOUBLE},
+		THE_MONTH_CONSUMPTION = #{theMonthConsumption,jdbcType=DOUBLE},
+		BALANCE = #{balance,jdbcType=DOUBLE},
+		EXTEND_PROP1 = #{extendProp1,jdbcType=VARCHAR},
+		EXTEND_PROP2 = #{extendProp2,jdbcType=VARCHAR},
+		EXTEND_PROP3 = #{extendProp3,jdbcType=VARCHAR},
+		LAST_OPERATOR_ID = #{lastOperatorId,jdbcType=BIGINT},
+		LAST_OPERATOR = #{lastOperator,jdbcType=VARCHAR},
+		LAST_OPERATED_TIME = #{lastOperatedTime,jdbcType=TIMESTAMP}
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+
+	<delete id="deleteByIds">
+		DELETE FROM t_dryline_etccard WHERE ID IN
+		<foreach item="item" index="index" collection="ids" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+</mapper>

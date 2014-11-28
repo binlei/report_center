@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.jshuabo.reportcenter.server.dao.automobile.ICountRecordDataMapper">
+	<select id="page" parameterType="map" resultType="CountRecordData">
+		SELECT ID,
+		DATE_FORMAT(DATE,'%Y-%m') AS month,
+		SUB_STATION AS subStation,
+		DRIVER AS driver,
+		ROUND(SUM(MILEAGE), 1) AS mileage,
+		SUM(TICKET_QUANTITY) AS ticketQuantity,
+		SUM(HALL_QUANTITY) AS hallQuantity,
+		SUM(PCS_QUANTITY) AS pcsQuantity,
+		ROUND(SUM(FUEL_COSTS), 2) AS fuelCosts,
+		SUM(RENTAL_FEE) AS rentalFee,
+		SUM(PARKING_FEE) AS parkingFee,
+		SUM(AWARD) AS award,
+		ROUND(
+		CASE
+		WHEN (SUM(MILEAGE) - SUM(DAY) * 200) * 0.1 &lt;= (
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2 THEN
+		(SUM(MILEAGE) - SUM(DAY) * 200) * 0.1
+		ELSE
+		(
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2
+		END,
+		2
+		) AS subsidy,
+		ROUND(
+		(
+		SUM(FUEL_COSTS) + SUM(RENTAL_FEE) + SUM(PARKING_FEE) + SUM(AWARD) + (
+		CASE
+		WHEN (SUM(MILEAGE) - SUM(DAY) * 200) * 0.1 &lt;= (
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2 THEN
+		(SUM(MILEAGE) - SUM(DAY) * 200) * 0.1
+		ELSE
+		(
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2
+		END
+		)
+		),
+		2
+		) AS allCosts,
+		SUM(DAY) AS day,
+		COUNT(ID) AS times,
+		CLEAN AS clean,
+		ROUND((SUM(MILEAGE) / SUM(DAY)), 1) AS oneMileage,
+		ROUND(
+		(SUM(PCS_QUANTITY) / SUM(DAY)),
+		2
+		) AS onePcs,
+		ROUND(
+		(
+		(
+		SUM(FUEL_COSTS) + SUM(RENTAL_FEE) + SUM(PARKING_FEE) + SUM(AWARD) + (
+		CASE
+		WHEN (SUM(MILEAGE) - SUM(DAY) * 200) * 0.1 &lt;= (
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2 THEN
+		(SUM(MILEAGE) - SUM(DAY) * 200) * 0.1
+		ELSE
+		(
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2
+		END
+		)
+		) / SUM(DAY)
+		),
+		2
+		) AS oneCosts,
+		ROUND(
+		(
+		SUM(MILEAGE) / SUM(HALL_QUANTITY)
+		),
+		2
+		) AS amongHall,
+		ROUND(
+		(
+		SUM(TICKET_QUANTITY) / SUM(DAY)
+		),
+		2
+		) AS oneTicket,
+		ROUND(
+		(
+		SUM(HALL_QUANTITY) / SUM(DAY)
+		),
+		2
+		) AS oneHall,
+		ROUND(
+		(
+		(
+		SUM(FUEL_COSTS) + SUM(RENTAL_FEE) + SUM(PARKING_FEE) + SUM(AWARD) + (
+		CASE
+		WHEN (SUM(MILEAGE) - SUM(DAY) * 200) * 0.1 &lt;= (
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2 THEN
+		(SUM(MILEAGE) - SUM(DAY) * 200) * 0.1
+		ELSE
+		(
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2
+		END
+		)
+		) / SUM(PCS_QUANTITY)
+		),
+		2
+		) AS branchLine
+		FROM
+		t_branchline_drawout_record WHERE 1 = 1
+		<if test="subStation != null and subStation != ''">
+			AND SUB_STATION = #{subStation}
+		</if>
+		<if test="beginTime != null and beginTime != ''">
+			AND DATE &gt;= #{beginTime}
+		</if>
+     	<if test="endTime != null and endTime != ''">
+			AND DATE &lt;= #{endTime}
+		</if>
+		<if test="driver != null and driver != ''">
+			AND DRIVER LIKE CONCAT('%',#{driver},'%')
+		</if>
+		GROUP BY DRIVER,DATE_FORMAT(DATE,'%Y-%m'),SUB_STATION
+		<if test="offset != null">
+         LIMIT #{offset}, 
+        </if>
+        <if test="rows != null">
+         #{rows}
+        </if>
+	</select>
+
+	<select id="total" parameterType="map" resultType="Long">
+		SELECT COUNT(1) FROM t_branchline_drawout_record WHERE 1 = 1
+		<if test="subStation != null and subStation != ''">
+			AND SUB_STATION = #{subStation}
+		</if>
+		<if test="beginTime != null and beginTime != ''">
+			AND DATE &gt;= #{beginTime}
+		</if>
+     	<if test="endTime != null and endTime != ''">
+			AND DATE &lt;= #{endTime}
+		</if>
+		<if test="driver != null and driver != ''">
+			AND DRIVER LIKE CONCAT('%',#{driver},'%')
+		</if>
+	</select>
+	
+	<select id="exprotPageData" parameterType="Map" resultType="Map">
+		select MAX(ID) 'MAX',MIN(ID) 'MIN',COUNT(ID) 'COUNT' from
+			V_DRAWOUTRECORD_DATA WHERE 1=1
+				<if test="subStation != null and subStation != ''">
+					AND SUB_STATION = #{subStation}
+				</if>
+				<if test="beginTime != null and beginTime != ''">
+					AND DATE &gt;= #{beginTime}
+				</if>
+		     	<if test="endTime != null and endTime != ''">
+					AND DATE &lt;= #{endTime}
+				</if>
+				<if test="driver != null and driver != ''">
+					AND DRIVER LIKE CONCAT('%',#{driver},'%')
+				</if>
+				<if test="offset != null">
+					LIMIT #{offset}, #{rows}
+				</if>
+	</select>
+	<select id="exprot2Excel" parameterType="Map" resultType="list">
+		SELECT ID,
+		DATE_FORMAT(DATE,'%Y-%m') AS month,
+		SUB_STATION AS subStation,
+		DRIVER AS driver,
+		ROUND(SUM(MILEAGE), 1) AS mileage,
+		SUM(TICKET_QUANTITY) AS ticketQuantity,
+		SUM(HALL_QUANTITY) AS hallQuantity,
+		SUM(PCS_QUANTITY) AS pcsQuantity,
+		ROUND(SUM(FUEL_COSTS), 2) AS fuelCosts,
+		SUM(RENTAL_FEE) AS rentalFee,
+		SUM(PARKING_FEE) AS parkingFee,
+		SUM(AWARD) AS award,
+		ROUND(
+		CASE
+		WHEN (SUM(MILEAGE) - SUM(DAY) * 200) * 0.1 &lt;= (
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2 THEN
+		(SUM(MILEAGE) - SUM(DAY) * 200) * 0.1
+		ELSE
+		(
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2
+		END,
+		2
+		) AS subsidy,
+		ROUND(
+		(
+		SUM(FUEL_COSTS) + SUM(RENTAL_FEE) + SUM(PARKING_FEE) + SUM(AWARD) + (
+		CASE
+		WHEN (SUM(MILEAGE) - SUM(DAY) * 200) * 0.1 &lt;= (
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2 THEN
+		(SUM(MILEAGE) - SUM(DAY) * 200) * 0.1
+		ELSE
+		(
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2
+		END
+		)
+		),
+		2
+		) AS allCosts,
+		SUM(DAY) AS day,
+		COUNT(ID) AS times,
+		CLEAN AS clean,
+		ROUND((SUM(MILEAGE) / SUM(DAY)), 1) AS oneMileage,
+		ROUND(
+		(SUM(PCS_QUANTITY) / SUM(DAY)),
+		2
+		) AS onePcs,
+		ROUND(
+		(
+		(
+		SUM(FUEL_COSTS) + SUM(RENTAL_FEE) + SUM(PARKING_FEE) + SUM(AWARD) + (
+		CASE
+		WHEN (SUM(MILEAGE) - SUM(DAY) * 200) * 0.1 &lt;= (
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2 THEN
+		(SUM(MILEAGE) - SUM(DAY) * 200) * 0.1
+		ELSE
+		(
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2
+		END
+		)
+		) / SUM(DAY)
+		),
+		2
+		) AS oneCosts,
+		ROUND(
+		(
+		SUM(MILEAGE) / SUM(HALL_QUANTITY)
+		),
+		2
+		) AS amongHall,
+		ROUND(
+		(
+		SUM(TICKET_QUANTITY) / SUM(DAY)
+		),
+		2
+		) AS oneTicket,
+		ROUND(
+		(
+		SUM(HALL_QUANTITY) / SUM(DAY)
+		),
+		2
+		) AS oneHall,
+		ROUND(
+		(
+		(
+		SUM(FUEL_COSTS) + SUM(RENTAL_FEE) + SUM(PARKING_FEE) + SUM(AWARD) + (
+		CASE
+		WHEN (SUM(MILEAGE) - SUM(DAY) * 200) * 0.1 &lt;= (
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2 THEN
+		(SUM(MILEAGE) - SUM(DAY) * 200) * 0.1
+		ELSE
+		(
+		SUM(TICKET_QUANTITY) - SUM(DAY) * 40
+		) * 2
+		END
+		)
+		) / SUM(PCS_QUANTITY)
+		),
+		2
+		) AS branchLine
+		FROM
+		t_branchline_drawout_record WHERE 1 = 1
+		<if test="subStation != null and subStation != ''">
+			AND SUB_STATION = #{subStation}
+		</if>
+		<if test="beginTime != null and beginTime != ''">
+			AND DATE &gt;= #{beginTime}
+		</if>
+     	<if test="endTime != null and endTime != ''">
+			AND DATE &lt;= #{endTime}
+		</if>
+		<if test="driver != null and driver != ''">
+			AND DRIVER LIKE CONCAT('%',#{driver},'%')
+		</if>
+		GROUP BY DRIVER,DATE_FORMAT(DATE,'%Y-%m'),SUB_STATION
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+</mapper>

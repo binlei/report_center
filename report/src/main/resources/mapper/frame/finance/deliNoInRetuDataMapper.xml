@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.finance.IDeilNoInRetuDataMapper">
+	<resultMap type="ReturnGoodsData" id="returnDataResultMap">
+		<id property="id" column="ID" />
+		<result property="serialNo" column="SERIAL_NO" />
+		<result property="customerName" column="CUSTOMER_NAME" />
+		<result property="stationAddress" column="STATION_ADDRESS" />
+		<result property="returnDate" column="RETURN_DATE" />
+		<result property="returnQty" column="RETURN_QTY" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_DELI_NOIN_RETU_DATA;
+			CREATE TABLE T_DELI_NOIN_RETU_DATA
+			(
+			    ID INT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			    SERIAL_NO VARCHAR(40) NOT NULL,
+			    CUSTOMER_NAME VARCHAR(255),
+			    STATION_ADDRESS VARCHAR(255),
+			    RETURN_DATE DATE,
+			    RETURN_QTY DOUBLE DEFAULT 0,
+			  	EXTEND_PROP1 VARCHAR(200),
+			    EXTEND_PROP2 VARCHAR(200),
+			    CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX SERIAL_NO_INDEX(SERIAL_NO)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+	
+	<select id="page" parameterType="map" resultType="ReturnGoodsData" resultMap="returnDataResultMap">
+            SELECT ID, SERIAL_NO, CUSTOMER_NAME, STATION_ADDRESS, RETURN_DATE, RETURN_QTY, CREATED_TIME
+			FROM T_DELI_NOIN_RETU_DATA WHERE 1=1
+            <if test="creatorId != 1">
+            	AND CREATOR_ID = #{creatorId}
+            </if>
+			<if test="serialNo != null">
+		    	AND SERIAL_NO LIKE CONCAT('%',#{serialNo},'%' )
+		  	</if>
+            <if test="sortOrder != null">
+		    	ORDER BY ${sortOrder}
+		  	</if>
+            LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+            SELECT count(ID) FROM T_DELI_NOIN_RETU_DATA WHERE 1=1
+            <if test="creatorId != 1">
+            	AND CREATOR_ID = #{creatorId}
+            </if>
+			<if test="serialNo != null">
+		    	AND SERIAL_NO LIKE CONCAT('%',#{serialNo},'%' )
+		  	</if>
+	</select>
+	
+	<delete id="deliNoInRetuDataDelete" parameterType="String">
+		DELETE FROM T_DELI_NOIN_RETU_DATA WHERE ID = #{id}
+	</delete>
+	
+	<delete id="deleteMore">
+		DELETE FROM T_DELI_NOIN_RETU_DATA WHERE SERIAL_NO IN
+		<foreach item="item" index="index" collection="list"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+</mapper>

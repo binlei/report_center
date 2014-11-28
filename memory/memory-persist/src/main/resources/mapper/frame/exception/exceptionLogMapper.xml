@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.frame.server.dao.exceptionLog.IExceptionLogMapper">
+	<resultMap type="ExceptionLog" id="exceptionLogResultMap">
+		<id property="id" column="ID" />
+
+		<id property="type" column="TYPE" />
+		<id property="pageId" column="PAGE_ID" />
+		<id property="pageName" column="PAGE_NAME" />
+		<id property="longMethod" column="LONG_METHOD" />
+		<id property="longException" column="LONG_EXCEPTION" />
+		<id property="clazz" column="CLAZZ" />
+		<id property="method" column="METHOD" />
+		<id property="paramTypes" column="PARAM_TYPES" />
+		<id property="params" column="PARAMS" />
+		<id property="exception" column="EXCEPTION" />
+		<id property="detailException" column="DETAIL_EXCEPTION" />
+		<id property="extendProp1" column="EXTEND_PROP1" />
+		<id property="extendProp2" column="EXTEND_PROP2" />
+
+		<result property="info.creatorId" column="CREATOR_ID" />
+		<result property="info.creator" column="CREATOR" />
+		<result property="info.createdTime" column="CREATED_TIME" />
+		<result property="info.lastOperatorId" column="LAST_OPERATOR_ID" />
+		<result property="info.lastOperator" column="LAST_OPERATOR" />
+		<result property="info.lastOperatedTime" column="LAST_OPERATED_TIME" />
+	</resultMap>
+
+	<cache />
+
+	<sql id="createTable">
+		DROP TABLE IF EXISTS M_EXCEPTION_LOG; 
+		CREATE TABLE M_EXCEPTION_LOG
+		(
+			ID BIGINT(20) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+			TYPE VARCHAR(255),
+	 		PAGE_ID VARCHAR(255),
+	 		PAGE_NAME VARCHAR(255),
+			LONG_METHOD VARCHAR(400),
+	 		LONG_EXCEPTION TEXT,
+	 		CLAZZ VARCHAR(300),
+			METHOD VARCHAR(255),
+	 		PARAM_TYPES VARCHAR(500),
+	 		PARAMS TEXT,
+	 		EXCEPTION TEXT,
+			DETAIL_EXCEPTION BLOB,
+	 		EXTEND_PROP1 VARCHAR(255),
+			EXTEND_PROP2 VARCHAR(255),
+			CREATOR_ID BIGINT(20),
+	 		CREATOR VARCHAR(255),
+			CREATED_TIME DATETIME,
+			LAST_OPERATOR_ID BIGINT(20),
+	 		LAST_OPERATOR VARCHAR(255),
+			LAST_OPERATED_TIME DATETIME
+		)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+	</sql>
+
+	<select id="load" parameterType="Long" resultType="ExceptionLog" resultMap="exceptionLogResultMap">
+        <![CDATA[
+            SELECT * FROM M_EXCEPTION_LOG WHERE ID = #{id} 
+        ]]>
+	</select>
+
+	<select id="loadAll" resultType="ExceptionLog" resultMap="exceptionLogResultMap">
+        <![CDATA[
+            SELECT * FROM M_EXCEPTION_LOG
+        ]]>
+	</select>
+
+	<insert id="save" parameterType="ExceptionLog" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO M_EXCEPTION_LOG (
+			TYPE,PAGE_ID,PAGE_NAME,LONG_METHOD,LONG_EXCEPTION,CLAZZ,METHOD,PARAM_TYPES,
+			PARAMS,EXCEPTION,DETAIL_EXCEPTION,EXTEND_PROP1,EXTEND_PROP2,CREATOR_ID,CREATOR,CREATED_TIME
+		) VALUES (
+			#{type},#{pageId},#{pageName},#{longMethod},#{longException},
+			#{clazz},#{method},#{paramTypes},#{params},#{exception},
+			#{detailException},#{extendProp1},#{extendProp2},
+			#{creatorId},#{creator},#{createdTime}
+		)
+	</insert>
+
+	<update id="update" parameterType="ExceptionLog">
+		UPDATE M_EXCEPTION_LOG
+			SET
+			PAGE_ID = #{pageId},
+			PAGE_NAME = #{pageName},
+			LONG_METHOD = #{longMethod},
+			LONG_EXCEPTION = #{longException},
+			CLAZZ = #{clazz},
+			METHOD = #{method},
+	 		PARAM_TYPES = #{paramTypes},
+			PARAMS = #{params},
+			EXCEPTION = #{exception},
+			DETAIL_EXCEPTION = #{detailException},
+			EXTEND_PROP2 = #{extendProp2}
+			LAST_OPERATOR_ID=#{lastOperatorId},
+			LAST_OPERATOR=#{lastOperator},
+			LAST_OPERATED_TIME=#{lastOperatedTime}
+		WHERE ID = #{id}
+	</update>
+
+	<delete id="delete" parameterType="ExceptionLog">
+		<![CDATA[
+			DELETE FROM M_EXCEPTION_LOG WHERE ID = #{id}
+		]]>
+	</delete>
+
+	<delete id="deleteById" parameterType="Long">
+		<![CDATA[
+			DELETE FROM M_EXCEPTION_LOG WHERE ID = #{id}
+		]]>
+	</delete>
+</mapper>

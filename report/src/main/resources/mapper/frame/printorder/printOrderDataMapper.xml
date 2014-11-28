@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.reportcenter.server.dao.printorder.IPrintOrderDataMapper">
+	<resultMap type="PrintOrderData" id="printOrderDataResultMap">
+		<id property="id" column="ID" />
+		<result property="origin" column="ORIGIN" />
+		<result property="cargoOwner" column="CARGO_OWNER" />
+		<result property="mailAddress" column="MAIL_ADDRESS" />
+		<result property="weight" column="WEIGHT" />
+		<result property="destinationCity" column="DESTINATION_CITY" />
+		<result property="recipientName" column="RECIPIENT_NAME" />
+		<result property="unitName" column="UNIT_NAME" />
+		<result property="shippingAddress" column="SHIPPING_ADDRESS" />
+		<result property="phone" column="PHONE" />
+		<result property="collectionLoans" column="COLLECTION_LOANS" />
+		<result property="extendProp1" column="EXTEND_PROP1" />
+		<result property="extendProp2" column="EXTEND_PROP2" />
+		<result property="extendProp3" column="EXTEND_PROP3" />
+		<result property="creatorId" column="CREATOR_ID" />
+		<result property="creator" column="CREATOR" />
+		<result property="createdTime" column="CREATED_TIME" />
+	</resultMap>
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS T_PRINTORDER_DATA;
+			CREATE TABLE T_PRINTORDER_DATA
+			(
+				ID INT(40) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				ORIGIN VARCHAR(80),
+				CARGO_OWNER VARCHAR(80),
+				MAIL_ADDRESS VARCHAR(255),
+				WEIGHT VARCHAR(80),
+				DESTINATION_CITY VARCHAR(255),
+				RECIPIENT_NAME VARCHAR(255),
+				UNIT_NAME VARCHAR(255),
+				SHIPPING_ADDRESS VARCHAR(255),
+				PHONE VARCHAR(80),
+			 	COLLECTION_LOANS VARCHAR(255),
+				EXTEND_PROP1 VARCHAR(255),
+			  	EXTEND_PROP2 VARCHAR(255),
+				EXTEND_PROP3 VARCHAR(255),
+			  	CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="page" parameterType="map" resultType="PrintOrderData" resultMap="printOrderDataResultMap">
+		SELECT ID, ORIGIN, CARGO_OWNER, MAIL_ADDRESS, WEIGHT, DESTINATION_CITY, RECIPIENT_NAME, UNIT_NAME, SHIPPING_ADDRESS, PHONE, COLLECTION_LOANS 
+			FROM T_PRINTORDER_DATA WHERE 1=1 ORDER BY CREATED_TIME DESC
+		<if test="offset != null">
+			LIMIT #{offset}, #{rows}
+		</if>
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+		SELECT COUNT(ID) FROM T_PRINTORDER_DATA WHERE 1=1
+	</select>
+	
+	<insert id="save" parameterType="java.util.List">
+		INSERT INTO T_PRINTORDER_DATA (
+	        ORIGIN, 
+	        CARGO_OWNER, 
+	        MAIL_ADDRESS, 
+	        WEIGHT, 
+	        DESTINATION_CITY, 
+	        RECIPIENT_NAME, 
+	        UNIT_NAME, 
+	        SHIPPING_ADDRESS, 
+	        PHONE, 
+	        COLLECTION_LOANS,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES  
+		<foreach collection="list" item="item" index="index" separator="," >
+        	(#{item.origin},#{item.cargoOwner},#{item.mailAddress},
+        	 #{item.weight},#{item.destinationCity},#{item.recipientName},
+        	 #{item.unitName},#{item.shippingAddress},#{item.phone},
+        	 #{item.collectionLoans},#{item.creatorId},#{item.creator},#{item.createdTime}) 
+    	</foreach> 
+    	
+	</insert>
+</mapper>

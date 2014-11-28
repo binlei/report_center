@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jshuabo.frame.server.dao.security.IUserMapper">
+	<resultMap type="User" id="userResultMap">
+		<id property="id" column="ID" />
+		<result property="code" column="CODE" />
+		<result property="name" column="NAME" />
+		<result property="password" column="PASSWORD" />
+		<result property="lastPwd" column="LAST_PWD" />
+		<result property="lastMdPwdTime" column="LAST_MD_PWD_TIME" />
+		<result property="expiredDate" column="EXPIRED_DATE" />
+		<result property="passwordExpiredDate" column="PASSWORD_EXPIRED_DATE" />
+		<result property="locale" column="LOCALE" />
+		<result property="beRoot" column="BE_ROOT" />
+		<result property="enabled" column="ENABLED" />
+
+		<result property="contact.identityNo" column="CONTACT_IDENTITY_NO" />
+		<result property="contact.birthDate" column="CONTACT_BIRTH_DATE" />
+		<result property="contact.sex" column="CONTACT_SEX" />
+		<result property="contact.address" column="CONTACT_ADDRESS" />
+		<result property="contact.tel" column="CONTACT_TEL" />
+		<result property="contact.mobile" column="CONTACT_MOBILE" />
+		<result property="contact.email" column="CONTACT_EMAIL" />
+		<result property="contact.qq" column="CONTACT_QQ" />
+
+		<result property="info.creatorId" column="CREATOR_ID" />
+		<result property="info.creator" column="CREATOR" />
+		<result property="info.createdTime" column="CREATED_TIME" />
+		<result property="info.lastOperatorId" column="LAST_OPERATOR_ID" />
+		<result property="info.lastOperator" column="LAST_OPERATOR" />
+		<result property="info.lastOperatedTime" column="LAST_OPERATED_TIME" />
+		
+		<association property="organization" column="ORGANIZATION_ID" javaType="Organization" select="com.jshuabo.frame.server.dao.organization.IOrganizationMapper.load">
+			<id property="id" column="ID" />
+			<result property="code" column="CODE" />
+			<result property="name" column="NAME" />
+		</association>
+	</resultMap>
+
+	<!-- <cache /> -->
+
+	<sql id="createTable">
+		<![CDATA[
+			DROP TABLE IF EXISTS M_USER_ROLE;
+			DROP TABLE IF EXISTS M_USER;
+			CREATE TABLE M_USER
+			(
+				ID BIGINT(20) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+				CODE VARCHAR(255) NOT NULL UNIQUE,
+				NAME VARCHAR(255),
+				PASSWORD VARCHAR(255), 
+				LAST_PWD VARCHAR(255),
+				LAST_MD_PWD_TIME DATETIME,
+				ORGANIZATION_ID BIGINT(20),
+				EXPIRED_DATE DATETIME,
+				PASSWORD_EXPIRED_DATE DATETIME,
+				LOCALE VARCHAR(255),
+				BE_ROOT BOOLEAN DEFAULT 0,
+				ENABLED BOOLEAN DEFAULT 0,
+				CONTACT_IDENTITY_NO VARCHAR(255),
+				CONTACT_BIRTH_DATE DATE,
+				CONTACT_SEX VARCHAR(255),
+				CONTACT_ADDRESS VARCHAR(500),
+				CONTACT_TEL VARCHAR(255),
+				CONTACT_MOBILE VARCHAR(255),
+				CONTACT_EMAIL VARCHAR(255),
+				CONTACT_QQ VARCHAR(255), 
+				CREATOR_ID BIGINT(20),
+				CREATOR VARCHAR(255),
+				CREATED_TIME DATETIME,
+				LAST_OPERATOR_ID BIGINT(20),
+				LAST_OPERATOR VARCHAR(255),
+				LAST_OPERATED_TIME DATETIME,
+				INDEX CODE_INDEX(CODE)
+			)ENGINE=INNODB  DEFAULT CHARSET=UTF8 DEFAULT COLLATE=UTF8_BIN;
+		]]>
+	</sql>
+
+	<select id="getUserInfo" parameterType="java.lang.String" resultType="User">
+		SELECT * FROM m_user u WHERE u.`NAME` = {#userName} AND u.`PASSWORD` = {#password};
+	</select>
+
+	<select id="load" parameterType="Long" resultType="User" resultMap="userResultMap">
+        <![CDATA[
+            SELECT * FROM M_USER WHERE ID = #{id} 
+        ]]>
+	</select>
+
+	<select id="loadUserByCode" parameterType="String" resultType="User" resultMap="userResultMap">
+        <![CDATA[
+            SELECT * FROM M_USER WHERE CODE = #{code} 
+        ]]>
+	</select>
+
+	<select id="page" parameterType="map" resultType="User" resultMap="userResultMap">
+            SELECT * FROM M_USER WHERE   
+            	<if test="userId == 1">
+            		1=1
+            	</if>
+            	<if test="userId != 1">
+            		1 &lt; 0 
+            	</if>
+<!--             <if test="orgId != 1"> -->
+<!--             	AND ORGANIZATION_ID = #{orgId} -->
+<!--             </if> -->
+			<if test="code != '' and code != null">
+		    	AND CODE LIKE CONCAT('%',#{code},'%' )
+		  	</if>
+			<if test="name != '' and name != null">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+<!-- 			<if test="orgName != '' and orgName != null"> -->
+<!-- 		    	AND ORGANIZATION_ID IN(SELECT ID FROM M_ORGANIZATION WHERE NAME LIKE CONCAT('%',#{orgName},'%' )) -->
+<!-- 		  	</if> -->
+            <if test="sortOrder != null">
+		    	ORDER BY ${sortOrder}
+		  	</if>
+            LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="total" parameterType="map" resultType="Long" >
+            SELECT count(ID) FROM M_USER WHERE 
+	            <if test="userId == 1">
+	           		1=1
+	           	</if>
+	           	<if test="userId != 1">
+	           		1 &lt; 0 
+	           	</if>
+<!-- 			<if test="orgId != 1"> -->
+<!--             	AND ORGANIZATION_ID = #{orgId} -->
+<!--             </if> -->
+<!-- 			<if test="code != ''"> -->
+<!-- 		    	AND CODE LIKE CONCAT('%',#{code},'%' ) -->
+<!-- 		  	</if> -->
+<!-- 			<if test="name != ''"> -->
+<!-- 		    	AND NAME LIKE CONCAT('%',#{name},'%' ) -->
+<!-- 		  	</if> -->
+<!-- 			<if test="orgName != '' and orgName != null"> -->
+<!-- 		    	AND ORGANIZATION_ID IN(SELECT ID FROM M_ORGANIZATION WHERE NAME LIKE CONCAT('%',#{orgName},'%' )) -->
+<!-- 		  	</if> -->
+	</select>
+	
+	<select id="exportAll" parameterType="map" resultType="User" resultMap="userResultMap">
+            SELECT * FROM M_USER WHERE 1=1
+			<if test="orgId != 1">
+            	AND ORGANIZATION_ID = #{orgId}
+            </if>
+			<if test="code != ''">
+		    	AND CODE LIKE CONCAT('%',#{code},'%' )
+		  	</if>
+			<if test="name != ''">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+			<if test="orgName != '' and orgName != null">
+		    	AND ORGANIZATION_ID IN(SELECT ID FROM M_ORGANIZATION WHERE NAME LIKE CONCAT('%',#{orgName},'%' ))
+		  	</if>
+	</select>
+	
+	<select id="exportSelections" resultType="User" resultMap="userResultMap">
+            SELECT * FROM M_USER WHERE ID IN
+            <foreach item="item" index="index" collection="list"   
+                     open="(" separator="," close=")">  
+                     #{item}  
+             </foreach> 
+	</select>
+	
+	<select id="loadOrg" parameterType="Long" resultType="Organization">
+        <![CDATA[
+            SELECT b.* FROM M_USER a , M_ORGANIZATION b WHERE a.ORGANIZATION_ID = b.ID and a.ID = #{userId}
+        ]]>
+	</select>
+	
+	<select id="pageByCondition" parameterType="map" resultType="User" resultMap="userResultMap">
+            SELECT * FROM M_USER WHERE 1=1
+            <if test="orgId != 1">
+            	AND ORGANIZATION_ID = #{orgId}
+            </if>
+			<if test="code != ''">
+		    	AND CODE LIKE CONCAT('%',#{code},'%' )
+		  	</if>
+			<if test="name != ''">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+		  	<if test="noBindUser == 'false'">
+		  		<if test="status == 'in'">
+			  		AND	ID IN
+		            <foreach item="item" index="index" collection="userIds"   
+		                     open="(" separator="," close=")">  
+		                     #{item}  
+		             </foreach> 
+			  	</if>
+			  	<if test="status == 'out'">
+			  		AND	ID NOT IN
+		            <foreach item="item" index="index" collection="userIds"   
+		                     open="(" separator="," close=")">  
+		                     #{item}  
+		             </foreach> 
+			  	</if>
+		  	</if>
+		  	LIMIT #{offset}, #{rows}
+	</select>
+	
+	<select id="totalByCondition" parameterType="map" resultType="Long" >
+            SELECT COUNT(*) FROM M_USER WHERE 1=1
+            <if test="orgId != 1">
+            	AND ORGANIZATION_ID = #{orgId}
+            </if>
+			<if test="code != ''">
+		    	AND CODE LIKE CONCAT('%',#{code},'%' )
+		  	</if>
+			<if test="name != ''">
+		    	AND NAME LIKE CONCAT('%',#{name},'%' )
+		  	</if>
+		  	<if test="noBindUser == 'false'">
+		  		<if test="status == 'in'">
+			  		AND	ID IN
+		            <foreach item="item" index="index" collection="userIds"   
+		                     open="(" separator="," close=")">  
+		                     #{item}  
+		             </foreach> 
+			  	</if>
+			  	<if test="status == 'out'">
+			  		AND	ID NOT IN
+		            <foreach item="item" index="index" collection="userIds"   
+		                     open="(" separator="," close=")">  
+		                     #{item}  
+		             </foreach> 
+			  	</if>
+		  	</if>
+	</select>
+	
+	<insert id="save" parameterType="User" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO M_USER (
+			CODE,NAME,PASSWORD,LAST_PWD,LAST_MD_PWD_TIME,ORGANIZATION_ID,EXPIRED_DATE,PASSWORD_EXPIRED_DATE,LOCALE,
+			CONTACT_IDENTITY_NO,CONTACT_BIRTH_DATE,CONTACT_SEX,CONTACT_ADDRESS,CONTACT_TEL,
+			CONTACT_MOBILE,CONTACT_EMAIL,CONTACT_QQ,
+			CREATOR_ID,CREATOR,CREATED_TIME,ENABLED
+		) VALUES (
+			#{code},#{name},#{password},#{lastPwd},#{lastMdPwdTime},#{organization.id},
+			#{expiredDate},#{passwordExpiredDate},#{locale},
+			#{contact.identityNo},#{contact.birthDate},#{contact.sex},#{contact.address},#{contact.tel},#{contact.mobile},#{contact.email},#{contact.qq},
+			#{creatorId},#{creator},#{createdTime},#{enabled}
+		)
+	</insert>
+
+	<update id="update" parameterType="User">
+		UPDATE M_USER
+		SET 
+			CODE = #{code},
+			NAME = #{name},
+			<if test="password != null">
+				PASSWORD = #{password},
+			</if>
+			LAST_PWD = #{lastPwd},
+			LAST_MD_PWD_TIME = #{lastMdPwdTime},
+			ORGANIZATION_ID=#{organization.id},
+			EXPIRED_DATE = #{expiredDate},
+			PASSWORD_EXPIRED_DATE = #{passwordExpiredDate},
+			LOCALE = #{locale},
+			CONTACT_IDENTITY_NO = #{contact.identityNo},
+			CONTACT_BIRTH_DATE = #{contact.birthDate},
+			CONTACT_SEX = #{contact.sex},
+			CONTACT_ADDRESS = #{contact.address},
+			CONTACT_TEL = #{contact.tel},
+			CONTACT_MOBILE =#{contact.mobile},
+			CONTACT_EMAIL = #{contact.email},
+			CONTACT_QQ = #{contact.qq},
+			ENABLED = #{enabled},
+			LAST_OPERATOR_ID = #{lastOperatorId},
+			LAST_OPERATOR = #{lastOperator},
+			LAST_OPERATED_TIME = #{lastOperatedTime}
+		WHERE ID = #{id}
+	</update>
+	
+	<update id="updateUser" parameterType="map">
+		UPDATE M_USER
+		SET 
+			CODE = #{code},
+			NAME = #{name},
+			PASSWORD = #{password},
+			LAST_PWD = #{lastPwd},
+			LAST_MD_PWD_TIME = #{lastMdPwdTime},
+			ORGANIZATION_ID = #{organization.id},
+			EXPIRED_DATE = #{expiredDate},
+			PASSWORD_EXPIRED_DATE = #{passwordExpiredDate},
+			LOCALE = #{locale},
+			CONTACT_IDENTITY_NO = #{contact.identityNo},
+			CONTACT_BIRTH_DATE = #{contact.birthDate},
+			CONTACT_SEX = #{contact.sex},
+			CONTACT_ADDRESS = #{contact.address},
+			CONTACT_TEL = #{contact.tel},
+			CONTACT_MOBILE =#{contact.mobile},
+			CONTACT_EMAIL = #{contact.email},
+			CONTACT_QQ = #{contact.qq},
+			ENABLED = #{enabled},
+			LAST_OPERATOR_ID = #{lastOperatorId},
+			LAST_OPERATOR = #{lastOperator},
+			LAST_OPERATED_TIME = #{lastOperatedTime}
+		WHERE ID = #{id}
+	</update>
+
+	<update id="updateUserWithPassword">
+		<![CDATA[
+			UPDATE M_USER 
+			SET
+				PASSWORD = #{newPassword},
+				LAST_OPERATOR_ID = #{lastOperatorId},
+				LAST_OPERATOR = #{lastOperator},
+				LAST_OPERATED_TIME = #{lastOperatedTime}
+			WHERE ID = #{userId}
+		]]>
+	</update>
+	
+</mapper>

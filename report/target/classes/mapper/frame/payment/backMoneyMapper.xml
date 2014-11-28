@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jshuabo.reportcenter.server.dao.payment.IBackMoneyMapper">
+	<resultMap id="backMoneyResultMap" type="BackMoney">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+	    <result column="SETTLE_NO" property="settleNo" jdbcType="VARCHAR" />
+	    <result column="BACKFUNDS_MONEY" property="backFundsMoney" jdbcType="DOUBLE" />
+	    <result column="BACKFUNDS_DATE" property="backFundsDate" jdbcType="TIMESTAMP" />
+	    <result column="BACKFUNDS_BANK" property="backFundsBank" jdbcType="VARCHAR" />
+	    <result column="INFORMATION" property="information" jdbcType="VARCHAR" />
+	    <result column="ADJUST_MONEY" property="adjustMoney" jdbcType="DOUBLE" />
+	    <result column="EXTEND_PROP1" property="extendProp1" jdbcType="VARCHAR" />
+	    <result column="EXTEND_PROP2" property="extendProp2" jdbcType="VARCHAR" />
+	    
+	    <result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+	    <result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+	    <result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+	    <result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+	    <result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+	    <result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		ID, SETTLE_NO, BACKFUNDS_MONEY, BACKFUNDS_DATE,
+		BACKFUNDS_BANK,
+		INFORMATION, ADJUST_MONEY,
+		EXTEND_PROP1, EXTEND_PROP2,
+		CREATOR_ID, CREATOR, CREATED_TIME, LAST_OPERATOR_ID,
+		LAST_OPERATOR,
+		LAST_OPERATED_TIME
+	</sql>
+	
+	<select id="page" parameterType="Map" resultMap="backMoneyResultMap">
+            SELECT <include refid="Base_Column_List"/>  FROM t_backfunds_data WHERE 1=1
+			<if test="checkoutOrder != null">
+				AND SETTLE_NO = #{checkoutOrder}
+			</if>
+	     	<if test="confirm != null">
+				AND INFORMATION = #{confirm}
+			</if>
+            <if test="sortOrder != null">
+				ORDER BY ${sortOrder}
+			</if>
+			<if test="offset != null">
+				LIMIT #{offset},#{rows}
+	        </if>
+	</select>
+	
+	<select id="total" parameterType="Map" resultType="Long" >
+            SELECT COUNT(1) FROM t_backfunds_data WHERE 1=1
+            <if test="checkoutOrder != null">
+				AND SETTLE_NO = #{checkoutOrder}
+			</if>
+	     	<if test="confirm != null">
+				AND INFORMATION &lt;= #{confirm}
+			</if>
+	</select>
+
+	<insert id="insert" parameterType="Map">
+		insert into t_backfunds_data
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="settleNo != null">
+				SETTLE_NO,
+			</if>
+			<if test="backFundsMoney != null">
+				BACKFUNDS_MONEY,
+			</if>
+			<if test="backFundsDate != null">
+				BACKFUNDS_DATE,
+			</if>
+			<if test="backFundsBank != null">
+				BACKFUNDS_BANK,
+			</if>
+			<if test="information != null">
+				INFORMATION,
+			</if>
+			<if test="adjustMoney != null">
+				ADJUST_MONEY,
+			</if>
+			<if test="extendProp1 != null">
+				EXTEND_PROP1,
+			</if>
+			<if test="extendProp2 != null">
+				EXTEND_PROP2,
+			</if>
+			<if test="creatorId != null">
+				CREATOR_ID,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createdTime != null">
+				CREATED_TIME
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="settleNo != null">
+				#{settleNo,jdbcType=VARCHAR},
+			</if>
+			<if test="backFundsMoney != null">
+				#{backFundsMoney,jdbcType=DOUBLE},
+			</if>
+			<if test="backFundsDate != null">
+				#{backFundsDate,jdbcType=DATE},
+			</if>
+			<if test="backFundsBank != null">
+				#{backFundsBank,jdbcType=VARCHAR},
+			</if>
+			<if test="information != null">
+				#{information,jdbcType=VARCHAR},
+			</if>
+			<if test="adjustMoney != null">
+				#{adjustMoney,jdbcType=DOUBLE},
+			</if>
+			<if test="extendProp1 != null">
+				#{extendProp1,jdbcType=VARCHAR},
+			</if>
+			<if test="extendProp2 != null">
+				#{extendProp2,jdbcType=VARCHAR},
+			</if>
+			<if test="creatorId != null">
+				#{creatorId,jdbcType=BIGINT},
+			</if>
+			<if test="creator != null">
+				#{creator,jdbcType=VARCHAR},
+			</if>
+			<if test="createdTime != null">
+				#{createdTime,jdbcType=TIMESTAMP}
+			</if>
+		</trim>
+	</insert>
+
+	<update id="update" parameterType="Map">
+		update t_backfunds_data
+		set
+		SETTLE_NO = #{settleNo,jdbcType=VARCHAR},
+		BACKFUNDS_MONEY =
+		#{backFundsMoney,jdbcType=DOUBLE},
+		BACKFUNDS_DATE =
+		#{backFundsDate,jdbcType=DATE},
+		BACKFUNDS_BANK =
+		#{backFundsBank,jdbcType=VARCHAR},
+		INFORMATION =
+		#{information,jdbcType=VARCHAR},
+		ADJUST_MONEY =
+		#{adjustMoney,jdbcType=DOUBLE},
+		EXTEND_PROP1 =
+		#{extendProp1,jdbcType=VARCHAR},
+		EXTEND_PROP2 =
+		#{extendProp2,jdbcType=VARCHAR},
+		LAST_OPERATOR_ID =
+		#{lastOperatorId,jdbcType=BIGINT},
+		LAST_OPERATOR =
+		#{lastOperator,jdbcType=VARCHAR},
+		LAST_OPERATED_TIME =
+		#{lastOperatedTime,jdbcType=TIMESTAMP}
+		where ID =
+		#{id,jdbcType=BIGINT}
+	</update>
+	
+	<select id="selectBySettleNo" parameterType="String" resultMap="backMoneyResultMap">
+		select * from t_backfunds_data where SETTLE_NO = #{settleNo}
+	</select>
+	
+	<delete id="deleteByIds" >
+		DELETE FROM t_backfunds_data WHERE ID IN
+		<foreach item="item" index="index" collection="ids"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<select id="backMoneyConfirm" >
+		update t_backfunds_data set INFORMATION = '确认' where ID IN
+		<foreach item="item" index="index" collection="ids"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</select>
+	
+	<insert id="doImport">
+		INSERT INTO t_backfunds_data (
+	        SETTLE_NO,
+	        BACKFUNDS_MONEY,
+	        BACKFUNDS_DATE,
+	        BACKFUNDS_BANK,
+	        EXTEND_PROP1,
+	        CREATOR_ID,
+	        CREATOR,
+	        CREATED_TIME
+		) VALUES 
+		<foreach collection="lis" item="item" index="index" separator="," >
+			(#{item.settleNo},
+			#{item.backFundsMoney},
+			#{item.backFundsDate},
+			#{item.backFundsBank},1,
+			 #{creatorId},
+			 #{creator},
+			 #{createdTime})
+		</foreach>
+	</insert>
+	
+	<!-- 创建临时表 -->
+	<select id="createTempTable">
+		CREATE TEMPORARY TABLE
+			IF NOT EXISTS t_back_money_temp (
+				`ID` BIGINT (20) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+				`SETTLE_NO` VARCHAR (40) COLLATE utf8_bin NOT NULL,
+				`BACKFUNDS_MONEY` DOUBLE DEFAULT NULL,
+				`BACKFUNDS_DATE` date DEFAULT NULL,
+				`BACKFUNDS_BANK` VARCHAR (40) COLLATE utf8_bin DEFAULT NULL,
+				`INFORMATION` VARCHAR (400) COLLATE utf8_bin DEFAULT NULL,
+				`ADJUST_MONEY` DOUBLE DEFAULT NULL,
+				`EXTEND_PROP1` VARCHAR (200) COLLATE utf8_bin DEFAULT NULL,
+				`EXTEND_PROP2` VARCHAR (200) COLLATE utf8_bin DEFAULT NULL,
+				`CREATOR_ID` BIGINT (20) DEFAULT NULL,
+				`CREATOR` VARCHAR (255) COLLATE utf8_bin DEFAULT NULL,
+				`CREATED_TIME` datetime DEFAULT NULL,
+				`LAST_OPERATOR_ID` BIGINT (20) DEFAULT NULL,
+				`LAST_OPERATOR` VARCHAR (255) COLLATE utf8_bin DEFAULT NULL,
+				`LAST_OPERATED_TIME` datetime DEFAULT NULL 
+			)
+	</select>
+	
+	<!-- 数据插入临时表 -->
+	<insert id="insertTempTable">
+		INSERT INTO t_back_money_temp (SETTLE_NO, ADJUST_MONEY) VALUES 
+		<foreach collection="lis" item="item" index="index" separator="," >
+			(#{item.settleNo}, #{item.adjustMoney})
+		</foreach>
+	</insert>
+	
+	<!-- 将临时表数据 更新到 正式表 -->
+	<update id="updateBackMoney">
+		 UPDATE t_backfunds_data ot,
+					(SELECT * FROM t_back_money_temp newtable WHERE EXISTS 
+							(SELECT * FROM t_backfunds_data oldtable WHERE newtable.SETTLE_NO = oldtable.SETTLE_NO )) t 
+
+				SET 
+					ot.ADJUST_MONEY = t.ADJUST_MONEY
+					
+				WHERE ot.SETTLE_NO = t.SETTLE_NO
+	</update>
+	
+	<!-- drop temp table -->
+	<delete id="dropTempTable">
+		DROP TEMPORARY TABLE IF EXISTS t_back_money_temp
+	</delete>
+</mapper>

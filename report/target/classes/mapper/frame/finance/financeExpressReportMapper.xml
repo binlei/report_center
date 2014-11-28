@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="com.jshuabo.reportcenter.server.dao.finance.IFinanceExpressReportMapper">
+	<resultMap id="financeExpressReportResultMap" type="FinanceExpressReport">
+		<id column="ID" property="id" jdbcType="BIGINT" />
+		<result column="CONFIRM_DATE" property="confirmDate" jdbcType="TIMESTAMP" />
+		<result column="CUSTOMER" property="customer" jdbcType="VARCHAR" />
+		<result column="OUTBOUND_ORDER_NO" property="outboundOrderNo" jdbcType="VARCHAR" />
+		<result column="KIND_STANDARD" property="kindStandard" jdbcType="VARCHAR" />
+		<result column="UNIT" property="unit" jdbcType="VARCHAR" />
+		<result column="COLOR" property="color" jdbcType="VARCHAR" />
+		<result column="OUTBOUND_QUANTITY" property="outboundQuantity" jdbcType="INTEGER" />
+		<result column="CUSTOMER_CATEGORY" property="customerCategory" jdbcType="VARCHAR" />
+		<result column="DEPARTMENT" property="department" jdbcType="VARCHAR" />
+		<result column="LOCATION" property="location" jdbcType="VARCHAR" />
+		<result column="REALITY_DATE" property="realityDate" jdbcType="TIMESTAMP" />
+		<result column="DESPATCH_CATEGORY" property="despatchCategory" jdbcType="VARCHAR" />
+		<result column="DESPATCH_LOCATION" property="despatchLocation" jdbcType="VARCHAR" />
+		<result column="START_CITY" property="startCity" jdbcType="VARCHAR" />
+		<result column="ONE_CITIES" property="oneCities" jdbcType="VARCHAR" />
+		<result column="DSTINATION" property="dstination" jdbcType="VARCHAR" />
+		<result column="ACCEPT_CATEGORY" property="acceptCategory" jdbcType="VARCHAR" />
+		<result column="PIECE" property="piece" jdbcType="INTEGER" />
+		<result column="WEIGHT" property="weight" jdbcType="DOUBLE" />
+		<result column="CHARGE_WEIGHT" property="chargeWeight" jdbcType="DOUBLE" />
+		<result column="FREIGHT_AMOUNT" property="freightAmount" jdbcType="DOUBLE" />
+		<result column="SHIPPER" property="shipper" jdbcType="VARCHAR" />
+		<result column="WAY_BILL_NO" property="wayBillNo" jdbcType="VARCHAR" />
+		<result column="POLL" property="poll" jdbcType="INTEGER" />
+		<result column="CLOSE_MONEY" property="closeMoney" jdbcType="DOUBLE" />
+		<result column="AFTER_MONEY" property="afterMoney" jdbcType="DOUBLE" />
+		<result column="SINGLE_MONEY" property="singleMoney" jdbcType="DOUBLE" />
+		<result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+		<result column="SAVE_MONEY" property="saveMoney" jdbcType="DOUBLE" />
+		<result column="EXTEND_PROP1" property="extendProp1" jdbcType="VARCHAR" />
+		<result column="EXTEND_PROP2" property="extendProp2" jdbcType="VARCHAR" />
+		<result column="EXTEND_PROP3" property="extendProp3" jdbcType="VARCHAR" />
+
+		<result column="CREATOR_ID" property="info.creatorId" jdbcType="BIGINT" />
+		<result column="CREATOR" property="info.creator" jdbcType="VARCHAR" />
+		<result column="CREATED_TIME" property="info.createdTime" jdbcType="TIMESTAMP" />
+		<result column="LAST_OPERATOR_ID" property="info.lastOperatorId" jdbcType="BIGINT" />
+		<result column="LAST_OPERATOR" property="info.lastOperator" jdbcType="VARCHAR" />
+		<result column="LAST_OPERATED_TIME" property="info.lastOperatedTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		ID, CONFIRM_DATE, CUSTOMER, OUTBOUND_ORDER_NO, KIND_STANDARD, UNIT,
+		COLOR, OUTBOUND_QUANTITY,
+		CUSTOMER_CATEGORY, DEPARTMENT, LOCATION, REALITY_DATE, DESPATCH_CATEGORY,
+		DESPATCH_LOCATION,
+		START_CITY, ONE_CITIES, DSTINATION, ACCEPT_CATEGORY, PIECE, WEIGHT,
+		CHARGE_WEIGHT,
+		FREIGHT_AMOUNT, SHIPPER, WAY_BILL_NO, POLL, CLOSE_MONEY, AFTER_MONEY, SINGLE_MONEY,
+		DESCRIPTION, SAVE_MONEY, EXTEND_PROP1, EXTEND_PROP2, EXTEND_PROP3,
+		CREATOR_ID, CREATOR,
+		CREATED_TIME, LAST_OPERATOR_ID, LAST_OPERATOR, LAST_OPERATED_TIME
+	</sql>
+	<sql id="page_sql">
+		select <include refid="Base_Column_List"/> from t_finance_express_report
+		<where>
+			1 = 1 
+			<if test="confirmDate != null">
+				and CONFIRM_DATE = #{confirmDate}
+			</if>
+			<if test="outboundOrderNo != null">
+				and OUTBOUND_ORDER_NO = #{outboundOrderNo}
+			</if>
+			<if test="realityDate != null">
+				and REALITY_DATE = #{realityDate}
+			</if>
+			<if test="startCity != null">
+				and START_CITY = #{startCity}
+			</if>
+			<if test="dstination != null">
+				and DSTINATION = #{dstination}
+			</if>
+			<if test="wayBillNo != null">
+				and WAY_BILL_NO = #{wayBillNo}
+			</if>
+			<if test="sortOrder != null">
+				ORDER BY ${sortOrder}
+		  	</if>
+            LIMIT #{offset}, #{rows}
+		</where>
+	</sql>
+	<select id="page" parameterType="Map" resultMap="financeExpressReportResultMap">
+		<include refid="page_sql"/>
+	</select>
+	
+	<delete id="deleteByIds" parameterType="java.lang.Long">
+		DELETE FROM t_finance_express_report WHERE ID IN
+		<foreach item="item" index="index" collection="ids"   
+			open="(" separator="," close=")">  
+			#{item}  
+		</foreach> 
+	</delete>
+	
+	<select id="total" parameterType="Map" resultType="java.lang.Long">
+		select count(*) from t_finance_express_report
+		<where>
+			1 = 1 
+			<if test="confirmDate != null">
+				and CONFIRM_DATE = #{confirmDate}
+			</if>
+			<if test="outboundOrderNo != null">
+				and OUTBOUND_ORDER_NO = #{outboundOrderNo}
+			</if>
+			<if test="realityDate != null">
+				and REALITY_DATE = #{realityDate}
+			</if>
+			<if test="startCity != null">
+				and START_CITY = #{startCity}
+			</if>
+			<if test="dstination != null">
+				and DSTINATION = #{dstination}
+			</if>
+			<if test="wayBillNo != null">
+				and WAY_BILL_NO = #{wayBillNo}
+			</if>
+		</where>
+	</select>
+
+	<select id="selectById" resultMap="financeExpressReportResultMap" parameterType="java.lang.Long">
+		select  ID, CONFIRM_DATE, CUSTOMER, OUTBOUND_ORDER_NO, KIND_STANDARD, UNIT,
+						COLOR, OUTBOUND_QUANTITY,
+						CUSTOMER_CATEGORY, DEPARTMENT, LOCATION, REALITY_DATE, DESPATCH_CATEGORY,
+						DESPATCH_LOCATION,
+						START_CITY, ONE_CITIES, DSTINATION, ACCEPT_CATEGORY, PIECE, WEIGHT,
+						CHARGE_WEIGHT,
+						FREIGHT_AMOUNT, SHIPPER, WAY_BILL_NO, POLL, CLOSE_MONEY, AFTER_MONEY, SINGLE_MONEY,
+						DESCRIPTION, SAVE_MONEY, EXTEND_PROP1, EXTEND_PROP2, EXTEND_PROP3,
+						CREATOR_ID, CREATOR,
+						CREATED_TIME, LAST_OPERATOR_ID, LAST_OPERATOR, LAST_OPERATED_TIME
+				from t_finance_express_report
+			where ID = #{id,jdbcType=BIGINT}
+	</select>
+
+	<update id="update" parameterType="Map">
+		update t_finance_express_report
+			set  
+				REALITY_DATE = #{realityDate,jdbcType=TIMESTAMP},
+				DESPATCH_CATEGORY = #{despatchCategory,jdbcType=VARCHAR},
+				DESPATCH_LOCATION = #{despatchLocation,jdbcType=VARCHAR},
+				START_CITY = #{startCity,jdbcType=VARCHAR},
+				ONE_CITIES = #{oneCities,jdbcType=VARCHAR},
+				DSTINATION = #{dstination,jdbcType=VARCHAR},
+				ACCEPT_CATEGORY = #{acceptCategory,jdbcType=VARCHAR},
+				PIECE = #{piece,jdbcType=INTEGER},
+				WEIGHT = #{weight,jdbcType=DOUBLE},
+				CHARGE_WEIGHT = #{chargeWeight,jdbcType=DOUBLE},
+				FREIGHT_AMOUNT = #{freightAmount,jdbcType=DOUBLE},
+				SHIPPER = #{shipper,jdbcType=VARCHAR},
+				WAY_BILL_NO = #{wayBillNo,jdbcType=VARCHAR},
+				POLL = #{poll,jdbcType=INTEGER},
+				CLOSE_MONEY = #{closeMoney,jdbcType=DOUBLE},
+				AFTER_MONEY = #{afterMoney,jdbcType=DOUBLE},
+				SINGLE_MONEY = #{singleMoney,jdbcType=DOUBLE},
+				DESCRIPTION = #{description,jdbcType=VARCHAR},
+				SAVE_MONEY = #{saveMoney,jdbcType=DOUBLE},
+				LAST_OPERATOR_ID = #{lastOperatorId,jdbcType=BIGINT},
+				LAST_OPERATOR = #{lastOperator,jdbcType=VARCHAR},
+				LAST_OPERATED_TIME = #{lastOperatedTime,jdbcType=TIMESTAMP}
+		where ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+	
+	<insert id="importReport" useGeneratedKeys="true" keyColumn="id">
+		insert into t_finance_express_report(CONFIRM_DATE, CUSTOMER, OUTBOUND_ORDER_NO, KIND_STANDARD, UNIT,
+				COLOR, OUTBOUND_QUANTITY,
+				CUSTOMER_CATEGORY, DEPARTMENT, LOCATION ,CREATOR_ID ,CREATOR ,CREATED_TIME)
+		values
+		<foreach collection="listMap" item="i" separator="," >
+			( #{i.confirmDate,jdbcType=TIMESTAMP},
+		      #{i.customer,jdbcType=VARCHAR},
+		      #{i.outboundOrderNo,jdbcType=VARCHAR},
+		      #{i.kindStandard,jdbcType=VARCHAR},
+		      #{i.unit,jdbcType=VARCHAR},
+		      #{i.color,jdbcType=VARCHAR},
+		      #{i.outboundQuantity,jdbcType=INTEGER},
+		      #{i.customerCategory,jdbcType=VARCHAR},
+		      #{i.department,jdbcType=VARCHAR},
+		      #{i.location,jdbcType=VARCHAR},
+		      #{creatorId},#{creator},#{createdTime})
+		</foreach>
+	</insert>
+	
+	<select id="exprotPageData" parameterType="Map" resultType="Map">
+		select MAX(ID) 'MAX',MIN(ID) 'MIN',COUNT(ID) 'COUNT' from
+			t_finance_express_report WHERE 1=1
+				<if test="confirmDate != null">
+					and CONFIRM_DATE = #{confirmDate}
+				</if>
+				<if test="outboundOrderNo != null">
+					and OUTBOUND_ORDER_NO = #{outboundOrderNo}
+				</if>
+				<if test="realityDate != null">
+					and REALITY_DATE = #{realityDate}
+				</if>
+				<if test="startCity != null">
+					and START_CITY = #{startCity}
+				</if>
+				<if test="dstination != null">
+					and DSTINATION = #{dstination}
+				</if>
+				<if test="wayBillNo != null">
+					and WAY_BILL_NO = #{wayBillNo}
+				</if>
+				<if test="sortOrder != null">
+					ORDER BY ${sortOrder}
+				</if>
+				<if test="offset != null">
+					LIMIT #{offset}, #{rows}
+				</if>
+	</select>
+	
+	<select id="exprot2Excel" parameterType="Map" resultMap="financeExpressReportResultMap">
+		<include refid="page_sql"/>
+	</select>
+</mapper>
